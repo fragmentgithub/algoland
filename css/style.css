@@ -25,11 +25,11 @@ body{
 }
 button{font-family:inherit;font-weight:800;color:var(--ink);border:none;cursor:pointer;touch-action:manipulation;background:none}
 
-/* ---- drifting clouds (very slow) ---- */
-.cloud{position:fixed;top:8%;font-size:64px;opacity:.8;pointer-events:none;animation:drift 900s linear infinite;z-index:0}
-.cloud.c2{top:22%;font-size:44px;animation-duration:1200s;animation-delay:-420s}
-.cloud.c3{top:4%;font-size:52px;animation-duration:1500s;animation-delay:-900s}
-@keyframes drift{from{left:-15%}to{left:105%}}
+/* ---- clouds: float in place (no horizontal drift — repeatedly reported as "too fast") ---- */
+.cloud{position:fixed;top:8%;left:12%;font-size:64px;opacity:.8;pointer-events:none;animation:cloudfloat 14s ease-in-out infinite;z-index:0}
+.cloud.c2{top:22%;left:68%;font-size:44px;animation-duration:18s;animation-delay:-6s}
+.cloud.c3{top:4%;left:42%;font-size:52px;animation-duration:22s;animation-delay:-12s}
+@keyframes cloudfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
 
 /* ---- screens ---- */
 .screen{display:none;position:relative;z-index:1;height:100dvh;flex-direction:column;padding:12px}
