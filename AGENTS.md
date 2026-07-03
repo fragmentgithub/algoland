@@ -84,8 +84,12 @@ localStorage が例外を投げる環境用に `store` がメモリ fallback を
 ## デプロイ
 
 `main` に push するだけ(Pages が legacy build で root を配信)。
-`gh run list` で pages-build-deployment を確認。まれに "Deployment failed, try again later" で失敗する
-→ `gh run rerun <id> --failed` で再実行。反映確認は公開URLの `js/core.js` が 200 を返すか。
+`gh run list` で pages-build-deployment を確認。まれに "Deployment failed, try again later" で失敗する。
+**注意: `gh run rerun --failed` は queued のまま固まることがあり、それが後続デプロイもブロックする。**
+確実な復旧手順は legacy build を直接リクエストすること:
+`gh api -X POST repos/fragmentgithub/algoland/pages/builds`
+→ 30秒ほどで `gh api repos/fragmentgithub/algoland/pages/builds/latest` が built になる。
+反映確認は公開URLの `js/core.js` が 200 を返すか+変更内容のgrep。
 
 ## 履歴と既知の判断
 
