@@ -271,7 +271,7 @@ button{font-family:inherit;font-weight:800;color:var(--ink);border:none;cursor:p
   transition:transform .1s;
 }
 .nextbtn:active{transform:scale(.95)}
-.confetti{position:fixed;top:-30px;font-size:24px;z-index:130;pointer-events:none;animation:fall linear forwards}
+.confetti{position:fixed;top:-30px;font-size:24px;z-index:65;pointer-events:none;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
 
 /* parent card */

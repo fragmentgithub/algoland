@@ -64,8 +64,9 @@ g4 のレベルを追加する場合: ⬆️➡️だけで到達可能か必ず
 - **時間制限**: デフォルト15分/日。`algo4.playSec` を10秒ごとに永続化、タブ非表示中はカウントしない。
   時間切れ→ #timeup ロック画面(z-index 100)→ PIN でリセット
 - **PIN**: 初期値 `1234`(README と「おうちのかたへ」モーダルに明記)。⚙️設定も PIN ゲート
-- **z-index 階層**: overlay 50 < friendol 60 < parent 70 < options 80 < timeup 100 < pad 120。
-  lockApp() は pad を閉じ全モーダルを非表示にする(pad が lock より上にある事故防止)
+- **z-index 階層**: overlay 50 < friendol 60 < confetti 65 < parent 70 < options 80 < timeup 100 < pad 120。
+  lockApp() は pad を閉じ全モーダルを非表示にする(pad が lock より上にある事故防止)。
+  unlockApp() はロック解除時にホームへ遷移する(epoch も進み残留状態を掃除)
 
 ## localStorage キー(プレフィックス `algo4.`)
 
@@ -91,8 +92,10 @@ localStorage が例外を投げる環境用に `store` がメモリ fallback を
 - 3回のレビュー→修正ループ済み。修正済みバグ: stale setTimeout(epoch導入)、g5連打二重加算、
   PINパッド180ms窓の二重確定、UTC日付バグ(localDay化)、ロック中の進行継続(lockAppでepoch++)、
   localStorage例外でスクリプト全死
-- 既知の許容トレードオフ: ロックがオーバーレイ表示中に発動すると onNextCb が破棄され、
-  解除後そのラウンドは🏠で戻る必要がある(実害小のため対応見送り)
+- 2026-07-04 Codex による改善: 全ゲームに「2回間違えたら正解が hintpulse で光る」を統一
+  (g3=data-answer / g5=data-cat / g6=data-target)、ロック解除後はホームへ遷移
+  (旧・許容トレードオフだった宙ぶらりんラウンド問題を解消)、紙吹雪 z-index を 65 に
+  (ロック画面・PINパッドの上に降らないように)
 - プレビュー/CI環境では `document.hidden=true` のためタイマーが進まない(仕様: 非表示中はカウントしない)
 - 雲のアニメは 260/340/420 秒(2回「速すぎる」と指摘され減速した経緯あり。これ以上速くしない)
 

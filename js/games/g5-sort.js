@@ -18,7 +18,7 @@ games.g5 = (() => {
       { cats: ['food', 'vehicle', 'animal'], count: 9 },
     ];
   }
-  let rounds = [], round = 0, queue = [], current = null;
+  let rounds = [], round = 0, queue = [], current = null, wrongCount = 0;
 
   function start() { rounds = roundsFor(); round = 0; startRound(); }
 
@@ -39,6 +39,7 @@ games.g5 = (() => {
     cats.forEach(cat => {
       const b = document.createElement('button');
       b.className = 'basket';
+      b.dataset.cat = cat;
       b.style.setProperty('--bk-c', CATS[cat].c);
       b.innerHTML = `<span class="bicon">${CATS[cat].icon}</span><span class="blabel">${CATS[cat].label}</span>`;
       b.addEventListener('click', () => onDrop(cat, b));
@@ -48,6 +49,8 @@ games.g5 = (() => {
   }
 
   function next() {
+    wrongCount = 0;
+    $$('#g5baskets .hintpulse').forEach(e => e.classList.remove('hintpulse'));
     current = queue.shift() || null;
     $('#g5left').textContent = current ? '●'.repeat(queue.length + 1) : '';
     const el = $('#g5item');
@@ -63,10 +66,17 @@ games.g5 = (() => {
   function onDrop(cat, basketEl) {
     if (!current) return;
     if (cat !== current.cat) {
+      wrongCount++;
       sfx.bad();
       wobble($('#g5item'));
+      if (wrongCount >= 2) {
+        const hint = $(`#g5baskets .basket[data-cat="${current.cat}"]`);
+        if (hint) hint.classList.add('hintpulse');
+      }
       return;
     }
+    wrongCount = 0;
+    $$('#g5baskets .hintpulse').forEach(e => e.classList.remove('hintpulse'));
     current = null; // consume now — double-taps during the pop animation do nothing
     sfx.good();
     replayAnim(basketEl, 'arrive');

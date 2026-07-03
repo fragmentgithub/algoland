@@ -12,13 +12,14 @@ games.g6 = (() => {
   ];
   const SHAPES = [['circle', 'まる'], ['square', 'しかく'], ['triangle', 'さんかく'], ['star', 'ほし']];
   const N_ROUNDS = 5;
-  let round = 0, target = null;
+  let round = 0, target = null, wrongCount = 0;
 
   function start() { round = 0; startRound(); }
 
   function comboKey(c, s) { return c[0] + '/' + s[0]; }
 
   function startRound() {
+    wrongCount = 0;
     renderPips($('#g6pips'), N_ROUNDS, round);
     let combos = [];
     let question = '';
@@ -66,6 +67,7 @@ games.g6 = (() => {
     combos.forEach(({ c, s }) => {
       const b = document.createElement('button');
       b.className = 'shapebtn';
+      b.dataset.target = c[0] === target.c[0] && s[0] === target.s[0] ? '1' : '0';
       const sh = document.createElement('div');
       sh.className = 'shape ' + s[0];
       sh.style.background = c[3];
@@ -77,13 +79,22 @@ games.g6 = (() => {
 
   function onPick(btn, c, s) {
     if (c[0] !== target.c[0] || s[0] !== target.s[0]) {
+      wrongCount++;
       sfx.bad();
       wobble(btn);
+      if (wrongCount >= 2) {
+        const hint = $('#g6grid .shapebtn[data-target="1"]');
+        if (hint) hint.classList.add('hintpulse');
+      }
       return;
     }
+    wrongCount = 0;
     sfx.good();
+    $$('#g6grid .shapebtn').forEach(b => {
+      b.disabled = true;
+      b.classList.remove('hintpulse');
+    });
     btn.classList.add('hintpulse');
-    $$('#g6grid .shapebtn').forEach(b => b.disabled = true);
     later(600, () => finishRound(round === N_ROUNDS - 1, () => { round++; startRound(); }));
   }
   return { start };

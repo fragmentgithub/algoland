@@ -26,11 +26,12 @@ games.g3 = (() => {
       { unit: ['🚗', '🚌', '🚓', '🚒'], extra: '🚲' },
     ],
   ];
-  let rounds = [], round = 0;
+  let rounds = [], round = 0, wrongCount = 0;
 
   function start() { rounds = SETS[diff]; round = 0; startRound(); }
 
   function startRound() {
+    wrongCount = 0;
     renderPips($('#g3pips'), rounds.length, round);
     $('#g3txt').textContent = 'つぎに くるのは なあに?';
     speak('ならびかたを よくみてね。つぎに くるのは なあに?');
@@ -56,6 +57,7 @@ games.g3 = (() => {
     opts.forEach(e => {
       const b = document.createElement('button');
       b.className = 'choice'; b.textContent = e;
+      b.dataset.answer = e === answer ? '1' : '0';
       b.addEventListener('click', () => onPick(b, e, answer, q));
       ch.appendChild(b);
     });
@@ -63,15 +65,24 @@ games.g3 = (() => {
 
   function onPick(btn, e, answer, qcell) {
     if (e !== answer) {
+      wrongCount++;
       sfx.bad();
       wobble(btn);
+      if (wrongCount >= 2) {
+        const hint = $('#g3choices .choice[data-answer="1"]');
+        if (hint) hint.classList.add('hintpulse');
+      }
       return;
     }
+    wrongCount = 0;
     sfx.good();
     qcell.classList.remove('q');
     qcell.textContent = answer;
     qcell.classList.add('arrive');
-    $$('#g3choices .choice').forEach(b => b.disabled = true);
+    $$('#g3choices .choice').forEach(b => {
+      b.disabled = true;
+      b.classList.remove('hintpulse');
+    });
     later(700, () => finishRound(round === rounds.length - 1, () => { round++; startRound(); }));
   }
   return { start };

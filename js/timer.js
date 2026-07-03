@@ -37,10 +37,12 @@ function lockApp() {
   speak('きょうは ここまで。また あとで あそぼうね');
 }
 function unlockApp() {
+  const wasLocked = locked;
   playSec = 0;
   store.set('playSec', '0');
   locked = false;
   $('#timeup').classList.remove('active');
+  if (wasLocked && typeof show === 'function') show('home');
   renderTimer();
 }
 setInterval(() => {
