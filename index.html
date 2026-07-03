@@ -7,13 +7,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=2026.07.04.5">
+<link rel="stylesheet" href="css/style.css?v=2026.07.04.6">
 <meta name="theme-color" content="#7BC8F0">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="アルゴランド">
+<meta name="apple-mobile-web-app-title" content="そうしんの アルゴランド">
 </head>
 <body>
 <div class="cloud">☁️</div>
@@ -73,7 +73,7 @@
   <div id="friendrow"></div>
   <div class="home-foot">
     <button class="linkbtn" id="parentbtn">おうちの かたへ</button>
-    <span class="app-version">v2026.07.04.5</span>
+    <span class="app-version">v2026.07.04.6</span>
   </div>
 </section>
 
@@ -274,6 +274,8 @@
     <p style="margin-top:12px">
       ⚙️(せってい)から難易度・プレイ時間の変更ができます。設定と時間切れ後のリセットには暗証番号が必要です(初期値: <b>1234</b>)。
       🔈ボタンで指示を読み上げるので、文字が読めなくても遊べます。1日のプレイ時間は日付が変わるとリセットされます。
+      声が出ないときは⚙️設定の「こえをテスト」で確認できます。Android では端末の設定 →「テキスト読み上げ」で
+      Google テキスト読み上げ+日本語の音声データが必要です(右上🔊がミュートになっていないかもご確認を)。
     </p>
     <button class="close" id="parentclose">とじる</button>
   </div>
@@ -308,6 +310,11 @@
         <button data-v="slow">ゆっくり</button>
         <button data-v="normal">ふつう</button>
       </div>
+    </div>
+    <div class="optrow">
+      <span class="optlabel">こえの かくにん</span>
+      <button class="optbtn" id="voicetest">🔈 こえを テスト</button>
+      <span id="voicestatus" style="font-size:13px;font-weight:700;opacity:.75"></span>
     </div>
     <div class="optrow">
       <span class="optlabel">おこさまの なまえ(よびかけに つかいます)</span>

@@ -12,7 +12,21 @@ function renderOptions() {
   $$('#optlimit button').forEach(b => b.classList.toggle('on', +b.dataset.v === limitMin));
   $$('#optrate button').forEach(b => b.classList.toggle('on', b.dataset.v === rateOpt));
   $('#optname').value = kidName;
+  renderVoiceStatus();
 }
+function renderVoiceStatus() {
+  const el = $('#voicestatus');
+  if (!('speechSynthesis' in window)) { el.textContent = 'この端末は読み上げ非対応です'; return; }
+  if (!jaVoice) pickJaVoice();
+  el.textContent = jaVoice
+    ? '日本語の音声: あり(' + jaVoice.name + ')'
+    : '日本語の音声が見つかりません。端末の設定で「テキスト読み上げ」に日本語データを追加してください';
+}
+$('#voicetest').addEventListener('click', () => {
+  sfx.good();
+  renderVoiceStatus();
+  speak('こんにちは!こえの テストです。きこえたら だいじょうぶ!');
+});
 $('#optname').addEventListener('change', () => {
   kidName = $('#optname').value.trim().slice(0, 8);
   store.set('kidName', kidName);
