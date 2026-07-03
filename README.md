@@ -28,7 +28,23 @@
 
 ## 技術メモ
 
-- 単一の `index.html`(Vanilla JS / 依存なし)
+- Vanilla JS / 依存なし・ビルド不要。file:// でも動くよう classic script 構成(読み込み順で依存解決)
 - 進捗・設定は localStorage(`algo4.*`)に保存
 - `prefers-reduced-motion` 対応
 - 非表示タブではプレイ時間をカウントしない
+
+## 構成
+
+```
+index.html          マークアップとスクリプト読み込み順
+css/style.css       全スタイル
+js/core.js          DOMヘルパー・乱数・storage・設定・epoch(画面遷移で古い処理を無効化)
+js/audio.js         効果音(Web Audio生成)
+js/speech.js        日本語読み上げ・ミュート
+js/rewards.js       ⭐とおともだちコレクション
+js/pad.js           暗証番号パッド
+js/timer.js         1日のプレイ時間制限・ロック画面
+js/options.js       設定モーダル
+js/ui.js            画面遷移・お祝い演出・ゲーム登録(games)
+js/games/g*.js      各ミニゲーム(games.gN に自己登録)
+```
