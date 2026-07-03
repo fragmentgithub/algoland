@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>アルゴランド</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky1:#AEE7FF;
+  --sky2:#7BC8F0;
+  --paper:#FFFDF5;
+  --ink:#2B3A67;
+  --coral:#FF6B6B;
+  --sun:#FFCF3F;
+  --leaf:#5FCB71;
+  --grape:#9B5DE5;
+  --aqua:#37B5C9;
+  --shadow:0 6px 0 rgba(43,58,103,.18);
+  --radius:22px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic',sans-serif;
+  font-weight:700;
+  color:var(--ink);
+  background:linear-gradient(180deg,var(--sky1) 0%,var(--sky2) 100%);
+  overflow:hidden;
+  touch-action:manipulation;
+  -webkit-user-select:none;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+button{font-family:inherit;font-weight:800;color:var(--ink);border:none;cursor:pointer;touch-action:manipulation;background:none}
+
+/* ---- drifting clouds (ゆっくり) ---- */
+.cloud{position:fixed;top:8%;font-size:64px;opacity:.8;pointer-events:none;animation:drift 130s linear infinite;z-index:0}
+.cloud.c2{top:22%;font-size:44px;animation-duration:180s;animation-delay:-60s}
+.cloud.c3{top:4%;font-size:52px;animation-duration:230s;animation-delay:-140s}
+@keyframes drift{from{left:-15%}to{left:105%}}
+
+/* ---- screens ---- */
+.screen{display:none;position:relative;z-index:1;height:100dvh;flex-direction:column;padding:12px}
+.screen.active{display:flex}
+#home{overflow-y:auto}
+
+/* ---- top bar ---- */
+.topbar{display:flex;align-items:center;gap:10px;flex:0 0 auto;padding:4px 2px;flex-wrap:wrap}
+.topbar .spacer{flex:1}
+.chipbtn{
+  background:var(--paper);border-radius:999px;box-shadow:var(--shadow);
+  padding:10px 18px;font-size:22px;min-height:56px;min-width:56px;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  transition:transform .1s;
+}
+.chipbtn:active{transform:translateY(3px)}
+.starwallet{background:var(--paper);border-radius:999px;box-shadow:var(--shadow);
+  padding:10px 18px;font-size:22px;min-height:56px;display:inline-flex;align-items:center;gap:6px}
+#timerchip{font-size:17px}
+
+/* ---- home ---- */
+#home{align-items:center;gap:14px}
+.home-title{display:flex;align-items:center;gap:14px;margin-top:6px}
+.home-title h1{
+  font-size:clamp(34px,7vmin,60px);font-weight:800;letter-spacing:.06em;
+  text-shadow:0 4px 0 rgba(43,58,103,.15);
+}
+.home-title h1 span{display:inline-block;animation:bob 2.4s ease-in-out infinite}
+.home-title h1 span:nth-child(2n){animation-delay:.22s}
+.home-title h1 span:nth-child(3n){animation-delay:.44s}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.mascot{width:clamp(64px,12vmin,110px);animation:bob 2.4s ease-in-out infinite}
+#decor{font-size:clamp(26px,5vmin,42px)}
+.home-sub{font-size:clamp(14px,2.8vmin,19px);opacity:.8}
+.cards{
+  display:grid;grid-template-columns:repeat(3,minmax(140px,240px));
+  gap:14px;width:min(780px,94vw);
+}
+.card{
+  background:var(--paper);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:clamp(12px,2.4vmin,20px);display:flex;flex-direction:column;align-items:center;gap:8px;
+  border-bottom:8px solid var(--card-c,var(--coral));
+  transition:transform .12s;
+}
+.card:active{transform:scale(.96)}
+.card .icon{font-size:clamp(36px,7.5vmin,60px);line-height:1}
+.card .name{font-size:clamp(15px,2.9vmin,21px);font-weight:800}
+.home-foot{display:flex;gap:12px;align-items:center;padding-bottom:10px}
+.linkbtn{font-size:15px;text-decoration:underline;opacity:.7;padding:10px}
+
+/* ---- friends (star rewards) ---- */
+#friendrow{
+  display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;
+  background:rgba(255,255,255,.5);border-radius:999px;padding:8px 20px;max-width:94vw;
+}
+#friendrow .rowlabel{font-size:13px;opacity:.7}
+.friend{font-size:34px;line-height:1;transition:transform .12s;animation:bob 3s ease-in-out infinite}
+.friend:nth-child(2n){animation-delay:.4s}
+.friend:nth-child(3n){animation-delay:.8s}
+.friend:active{transform:scale(1.25)}
+.friend.locked{filter:grayscale(1);opacity:.5;animation:none;display:inline-flex;flex-direction:column;align-items:center;font-size:26px}
+.friend.locked small{font-size:10px;font-weight:700}
+
+/* ---- shared game bits ---- */
+.instruction{
+  flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:10px;
+  margin:6px auto 10px;background:var(--paper);border-radius:999px;box-shadow:var(--shadow);
+  padding:10px 22px;max-width:94vw;
+}
+.instruction .txt{font-size:clamp(16px,3.4vmin,25px);font-weight:800}
+.speakbtn{background:var(--sun);border-radius:50%;width:48px;height:48px;font-size:22px;flex:0 0 auto;box-shadow:0 4px 0 rgba(43,58,103,.18);transition:transform .1s;display:inline-flex;align-items:center;justify-content:center}
+.speakbtn:active{transform:translateY(3px)}
+.playarea{flex:1 1 auto;position:relative;min-height:0}
+.roundpips{display:flex;gap:8px;justify-content:center;padding:6px}
+.roundpips i{width:14px;height:14px;border-radius:50%;background:rgba(43,58,103,.2)}
+.roundpips i.done{background:var(--sun)}
+
+@keyframes wobble{0%,100%{transform:translateX(0) rotate(0)}25%{transform:translateX(-7px) rotate(-6deg)}75%{transform:translateX(7px) rotate(6deg)}}
+.wobble{animation:wobble .4s ease}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+.hintpulse{animation:pulse .8s ease-in-out infinite}
+@keyframes popaway{to{transform:scale(1.6);opacity:0}}
+.popaway{animation:popaway .35s ease forwards}
+@keyframes arrive{from{transform:scale(.3)}to{transform:scale(1)}}
+.arrive{animation:arrive .3s cubic-bezier(.34,1.56,.64,1)}
+
+/* ---- game 1: number train ---- */
+#g1{--bsz:clamp(62px,13vmin,104px)}
+#g1 .balloon{
+  position:absolute;width:var(--bsz);height:var(--bsz);
+  border-radius:50% 50% 50% 8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:calc(var(--bsz)*.44);font-weight:800;color:#fff;
+  box-shadow:inset -6px -8px 0 rgba(0,0,0,.08),0 5px 0 rgba(43,58,103,.15);
+  transform:rotate(-4deg);
+}
+.trainrail{
+  flex:0 0 auto;display:flex;align-items:flex-end;gap:6px;overflow-x:auto;
+  background:rgba(255,255,255,.5);border-radius:var(--radius);
+  padding:10px 14px;min-height:86px;
+}
+.engine{font-size:52px;line-height:1}
+.traincar{
+  background:var(--car-c,var(--coral));color:#fff;border-radius:12px 12px 6px 6px;
+  min-width:52px;height:52px;display:flex;align-items:center;justify-content:center;
+  font-size:26px;font-weight:800;box-shadow:0 4px 0 rgba(43,58,103,.2);
+  position:relative;flex:0 0 auto;
+}
+.traincar::after{content:"";position:absolute;bottom:-9px;left:8px;right:8px;height:10px;
+  background:radial-gradient(circle at 25% 50%,var(--ink) 6px,transparent 7px),
+             radial-gradient(circle at 75% 50%,var(--ink) 6px,transparent 7px)}
+
+/* ---- game 2: height sort ---- */
+#g2 .playarea{display:flex;flex-direction:column;gap:8px}
+.lineup{
+  flex:1;display:flex;align-items:flex-end;justify-content:center;gap:10px;
+  background:rgba(255,255,255,.5);border-radius:var(--radius);padding:14px;
+}
+.slot{
+  border:4px dashed rgba(43,58,103,.3);border-radius:16px;
+  min-width:64px;display:flex;align-items:flex-end;justify-content:center;
+  padding:6px;transition:border-color .2s;
+}
+.slot.filled{border-color:transparent;background:rgba(255,255,255,.7)}
+.pool{flex:1;display:flex;align-items:center;justify-content:center;gap:clamp(8px,2vw,24px);flex-wrap:wrap}
+.hitem{line-height:1;transition:transform .12s;filter:drop-shadow(0 4px 0 rgba(43,58,103,.15))}
+.hitem:active{transform:scale(1.1)}
+
+/* ---- game 3: pattern ---- */
+#g3 .playarea{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(14px,4vmin,34px)}
+.seqrow{display:flex;gap:clamp(5px,1.4vw,12px);align-items:center;justify-content:center;flex-wrap:wrap;max-width:96vw}
+.seqcell{
+  width:clamp(46px,9vmin,80px);height:clamp(46px,9vmin,80px);
+  background:var(--paper);border-radius:18px;box-shadow:var(--shadow);
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(26px,5.6vmin,48px);
+}
+.seqcell.q{background:var(--sun);font-weight:800;animation:pulse 1.2s ease-in-out infinite}
+.choices{display:flex;gap:clamp(12px,3vw,28px)}
+.choice{
+  width:clamp(80px,16vmin,124px);height:clamp(80px,16vmin,124px);
+  background:var(--paper);border-radius:26px;box-shadow:var(--shadow);
+  font-size:clamp(40px,9vmin,70px);transition:transform .12s;
+  border-bottom:8px solid var(--aqua);
+}
+.choice:active{transform:scale(.94)}
+
+/* ---- game 4: robot ---- */
+#g4{--cell:clamp(50px,10.5vmin,84px)}
+#g4 .playarea{display:flex;flex-direction:column;align-items:center;gap:10px}
+.gridwrap{position:relative;flex:0 0 auto}
+.rgrid{display:grid;gap:0;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.rcell{
+  width:var(--cell);height:var(--cell);
+  background:#DFF6E3;
+  display:flex;align-items:center;justify-content:center;font-size:calc(var(--cell)*.5);
+}
+.rcell.alt{background:#CFEFD6}
+#robot{
+  position:absolute;width:var(--cell);height:var(--cell);
+  display:flex;align-items:center;justify-content:center;
+  font-size:calc(var(--cell)*.66);
+  transition:left .38s ease,top .38s ease;
+  pointer-events:none;z-index:2;
+}
+.cmdrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center}
+.cmdqueue{
+  display:flex;gap:6px;min-height:58px;min-width:min(340px,60vw);
+  background:rgba(255,255,255,.55);border-radius:16px;padding:6px 10px;align-items:center;
+  flex-wrap:wrap;
+}
+.cmdchip{background:var(--paper);border-radius:12px;width:46px;height:46px;font-size:24px;box-shadow:0 3px 0 rgba(43,58,103,.18)}
+.arrowbtn{
+  background:var(--paper);border-radius:20px;width:clamp(60px,12vmin,82px);height:clamp(60px,12vmin,82px);
+  font-size:clamp(28px,5.6vmin,40px);box-shadow:var(--shadow);border-bottom:7px solid var(--aqua);
+  transition:transform .1s;
+}
+.arrowbtn:active{transform:scale(.93)}
+.gobtn{
+  background:var(--leaf);color:#fff;border-radius:20px;
+  min-width:clamp(92px,18vmin,132px);height:clamp(60px,12vmin,82px);
+  font-size:clamp(22px,4.4vmin,32px);box-shadow:var(--shadow);border-bottom:7px solid #3E9A50;
+  transition:transform .1s;
+}
+.gobtn:active{transform:scale(.93)}
+
+/* ---- game 5: sorting into baskets ---- */
+#g5 .playarea{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+#g5left{letter-spacing:.3em;color:rgba(43,58,103,.5);font-size:14px;min-height:18px}
+#g5item{font-size:clamp(76px,19vmin,140px);line-height:1.2;filter:drop-shadow(0 6px 0 rgba(43,58,103,.15))}
+.baskets{display:flex;gap:clamp(10px,3vw,24px);justify-content:center;padding:8px;flex-wrap:wrap;flex:0 0 auto}
+.basket{
+  background:var(--paper);border-radius:24px;box-shadow:var(--shadow);
+  padding:12px 22px;display:flex;flex-direction:column;align-items:center;gap:4px;
+  border-bottom:8px solid var(--bk-c,var(--leaf));min-width:120px;
+  transition:transform .12s;
+}
+.basket:active{transform:scale(.94)}
+.basket .bicon{font-size:clamp(32px,7vmin,48px);line-height:1}
+.basket .blabel{font-size:clamp(15px,3vmin,20px);font-weight:800}
+
+/* ---- game 6: shape search ---- */
+#g6 .playarea{display:flex;align-items:center;justify-content:center}
+.shapegrid{display:flex;flex-wrap:wrap;gap:clamp(10px,2.6vmin,20px);justify-content:center;align-items:center;max-width:680px}
+.shapebtn{
+  width:clamp(80px,15vmin,124px);height:clamp(80px,15vmin,124px);
+  background:var(--paper);border-radius:24px;box-shadow:var(--shadow);
+  display:flex;align-items:center;justify-content:center;transition:transform .12s;
+}
+.shapebtn:active{transform:scale(.94)}
+.shape{width:62%;height:62%;pointer-events:none}
+.shape.circle{border-radius:50%}
+.shape.square{border-radius:14%}
+.shape.triangle{clip-path:polygon(50% 4%,97% 96%,3% 96%)}
+.shape.star{clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+
+/* ---- modals ---- */
+.modal{position:fixed;inset:0;background:rgba(43,58,103,.45);display:none;align-items:center;justify-content:center;padding:16px}
+.modal.active{display:flex}
+#overlay{z-index:50}
+#friendol{z-index:60}
+#parent{z-index:70}
+#options{z-index:80}
+#timeup{z-index:100;background:rgba(24,32,64,.82)}
+#pad{z-index:120}
+.wincard{
+  background:var(--paper);border-radius:34px;box-shadow:0 12px 0 rgba(0,0,0,.18);
+  padding:clamp(22px,4.6vmin,40px) clamp(28px,6vmin,58px);
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  animation:arrive .35s cubic-bezier(.34,1.56,.64,1);
+  max-width:92vw;text-align:center;
+}
+.wincard .praise{font-size:clamp(32px,7.5vmin,54px);font-weight:800;color:var(--coral)}
+.wincard .wstars{font-size:clamp(28px,6.5vmin,46px);letter-spacing:.1em}
+.wincard .bigfriend{font-size:clamp(64px,15vmin,120px);line-height:1.2;animation:bob 1.6s ease-in-out infinite}
+.nextbtn{
+  background:var(--sun);border-radius:999px;padding:16px 44px;
+  font-size:clamp(20px,4.4vmin,30px);box-shadow:var(--shadow);border-bottom:7px solid #D9A82A;
+  transition:transform .1s;
+}
+.nextbtn:active{transform:scale(.95)}
+.confetti{position:fixed;top:-30px;font-size:24px;z-index:130;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+/* parent card */
+.parentcard{
+  background:var(--paper);border-radius:24px;padding:28px;max-width:560px;max-height:82dvh;overflow-y:auto;
+  font-weight:500;line-height:1.8;font-size:15px;-webkit-user-select:text;user-select:text;
+}
+.parentcard h2{margin-bottom:10px}
+.parentcard dt{font-weight:800;margin-top:12px}
+.parentcard .close{margin-top:18px;background:var(--ink);color:#fff;border-radius:999px;padding:12px 30px;font-size:16px}
+
+/* options */
+.optcard{
+  background:var(--paper);border-radius:26px;padding:26px;width:min(480px,94vw);
+  max-height:86dvh;overflow-y:auto;display:flex;flex-direction:column;gap:16px;
+  animation:arrive .3s cubic-bezier(.34,1.56,.64,1);
+}
+.optcard h2{font-size:22px;text-align:center}
+.optrow{display:flex;flex-direction:column;gap:8px}
+.optrow .optlabel{font-size:16px;font-weight:800}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{
+  background:#EDEAE0;border-radius:14px;padding:10px 16px;font-size:16px;min-height:48px;
+  transition:transform .1s;
+}
+.seg button.on{background:var(--sun);box-shadow:0 3px 0 rgba(43,58,103,.2)}
+.seg button:active{transform:scale(.95)}
+.optbtn{background:var(--aqua);color:#fff;border-radius:14px;padding:12px 18px;font-size:16px}
+.optclose{background:var(--ink);color:#fff;border-radius:999px;padding:12px 30px;font-size:16px;align-self:center}
+
+/* pin pad */
+.padcard{
+  background:var(--paper);border-radius:26px;padding:26px;width:min(340px,92vw);
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  animation:arrive .3s cubic-bezier(.34,1.56,.64,1);
+}
+#padtitle{font-size:17px;font-weight:800;text-align:center}
+#paddots{font-size:28px;letter-spacing:.35em}
+.padgrid{display:grid;grid-template-columns:repeat(3,72px);gap:10px}
+.padgrid button{
+  background:#EDEAE0;border-radius:16px;height:60px;font-size:24px;
+  transition:transform .1s;
+}
+.padgrid button:active{transform:scale(.93)}
+
+/* time up */
+.sleepcard{
+  display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;color:#fff;
+}
+.sleepcard .zzz{font-size:clamp(70px,18vmin,130px);line-height:1.2}
+.sleepcard h2{font-size:clamp(28px,6.5vmin,46px)}
+.sleepcard p{font-size:clamp(16px,3.4vmin,22px);opacity:.9}
+.resetbtn{
+  margin-top:26px;background:rgba(255,255,255,.16);color:#fff;border:2px solid rgba(255,255,255,.4);
+  border-radius:999px;padding:10px 24px;font-size:14px;
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001s!important;transition-duration:.001s!important}
+}
+@media (max-width:640px){
+  .cards{grid-template-columns:repeat(2,1fr);gap:10px}
+  .home-title h1{font-size:30px}
+}
+</style>
+</head>
+<body>
+<div class="cloud">☁️</div>
+<div class="cloud c2">☁️</div>
+<div class="cloud c3">☁️</div>
+
+<!-- ================= HOME ================= -->
+<section class="screen active" id="home">
+  <div class="topbar">
+    <span class="starwallet">⭐ <b id="starcount">0</b></span>
+    <span class="starwallet" id="timerchip">⏱</span>
+    <span class="spacer"></span>
+    <button class="chipbtn" id="gearbtn" aria-label="せってい">⚙️</button>
+    <button class="chipbtn" id="mutebtn" aria-label="おとのオン・オフ">🔊</button>
+  </div>
+  <div style="flex:0 0 8px"></div>
+  <div class="home-title">
+    <svg class="mascot" viewBox="0 0 100 110" aria-hidden="true">
+      <line x1="50" y1="4" x2="50" y2="18" stroke="#2B3A67" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="50" cy="6" r="6" fill="#FF6B6B"/>
+      <rect x="16" y="18" width="68" height="52" rx="18" fill="#37B5C9"/>
+      <rect x="26" y="28" width="48" height="30" rx="12" fill="#FFFDF5"/>
+      <circle cx="41" cy="42" r="5" fill="#2B3A67"/>
+      <circle cx="59" cy="42" r="5" fill="#2B3A67"/>
+      <path d="M42 50 Q50 57 58 50" stroke="#2B3A67" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <rect x="30" y="74" width="40" height="26" rx="12" fill="#FFCF3F"/>
+      <circle cx="24" cy="87" r="7" fill="#FF6B6B"/>
+      <circle cx="76" cy="87" r="7" fill="#FF6B6B"/>
+    </svg>
+    <h1><span>ア</span><span>ル</span><span>ゴ</span><span>ラ</span><span>ン</span><span>ド</span></h1>
+    <span id="decor"></span>
+  </div>
+  <p class="home-sub">あそびながら かんがえる ちからを そだてよう</p>
+  <div class="cards">
+    <button class="card" style="--card-c:var(--coral)" data-game="g1">
+      <span class="icon">🚂</span><span class="name">すうじの きしゃ</span>
+    </button>
+    <button class="card" style="--card-c:var(--leaf)" data-game="g2">
+      <span class="icon">🦒</span><span class="name">せいくらべ</span>
+    </button>
+    <button class="card" style="--card-c:var(--grape)" data-game="g3">
+      <span class="icon">🍎</span><span class="name">つぎは なあに?</span>
+    </button>
+    <button class="card" style="--card-c:var(--aqua)" data-game="g4">
+      <span class="icon">🤖</span><span class="name">ロボットの おつかい</span>
+    </button>
+    <button class="card" style="--card-c:var(--sun)" data-game="g5">
+      <span class="icon">🧺</span><span class="name">なかまわけ</span>
+    </button>
+    <button class="card" style="--card-c:#F45B9E" data-game="g6">
+      <span class="icon">🔍</span><span class="name">かたち さがし</span>
+    </button>
+  </div>
+  <div id="friendrow"></div>
+  <div class="home-foot">
+    <button class="linkbtn" id="parentbtn">おうちの かたへ</button>
+  </div>
+</section>
+
+<!-- ================= GAME 1 ================= -->
+<section class="screen" id="g1">
+  <div class="topbar">
+    <button class="chipbtn backbtn">🏠</button>
+    <span class="spacer"></span>
+    <div class="roundpips" id="g1pips"></div>
+    <span class="spacer"></span>
+    <span class="starwallet">⭐ <b class="starcount2">0</b></span>
+  </div>
+  <div class="instruction">
+    <span class="txt" id="g1txt">すうじを 1から じゅんばんに タッチ!</span>
+    <button class="speakbtn" data-say="g1txt">🔈</button>
+  </div>
+  <div class="playarea" id="g1area"></div>
+  <div class="trainrail" id="g1train"><span class="engine">🚂</span></div>
+</section>
+
+<!-- ================= GAME 2 ================= -->
+<section class="screen" id="g2">
+  <div class="topbar">
+    <button class="chipbtn backbtn">🏠</button>
+    <span class="spacer"></span>
+    <div class="roundpips" id="g2pips"></div>
+    <span class="spacer"></span>
+    <span class="starwallet">⭐ <b class="starcount2">0</b></span>
+  </div>
+  <div class="instruction">
+    <span class="txt" id="g2txt">いちばん ちいさいのを タッチ!</span>
+    <button class="speakbtn" data-say="g2txt">🔈</button>
+  </div>
+  <div class="playarea">
+    <div class="lineup" id="g2lineup"></div>
+    <div class="pool" id="g2pool"></div>
+  </div>
+</section>
+
+<!-- ================= GAME 3 ================= -->
+<section class="screen" id="g3">
+  <div class="topbar">
+    <button class="chipbtn backbtn">🏠</button>
+    <span class="spacer"></span>
+    <div class="roundpips" id="g3pips"></div>
+    <span class="spacer"></span>
+    <span class="starwallet">⭐ <b class="starcount2">0</b></span>
+  </div>
+  <div class="instruction">
+    <span class="txt" id="g3txt">つぎに くるのは なあに?</span>
+    <button class="speakbtn" data-say="g3txt">🔈</button>
+  </div>
+  <div class="playarea">
+    <div class="seqrow" id="g3seq"></div>
+    <div class="choices" id="g3choices"></div>
+  </div>
+</section>
+
+<!-- ================= GAME 4 ================= -->
+<section class="screen" id="g4">
+  <div class="topbar">
+    <button class="chipbtn backbtn">🏠</button>
+    <span class="spacer"></span>
+    <div class="roundpips" id="g4pips"></div>
+    <span class="spacer"></span>
+    <span class="starwallet">⭐ <b class="starcount2">0</b></span>
+  </div>
+  <div class="instruction">
+    <span class="txt" id="g4txt">やじるしを ならべて ロボットを ほしまで つれていこう!</span>
+    <button class="speakbtn" data-say="g4txt">🔈</button>
+  </div>
+  <div class="playarea">
+    <div class="gridwrap">
+      <div class="rgrid" id="g4grid"></div>
+      <div id="robot">🤖</div>
+    </div>
+    <div class="cmdqueue" id="g4queue"></div>
+    <div class="cmdrow">
+      <button class="arrowbtn" data-dir="up">⬆️</button>
+      <button class="arrowbtn" data-dir="right">➡️</button>
+      <button class="gobtn" id="g4go">GO!</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= GAME 5 ================= -->
+<section class="screen" id="g5">
+  <div class="topbar">
+    <button class="chipbtn backbtn">🏠</button>
+    <span class="spacer"></span>
+    <div class="roundpips" id="g5pips"></div>
+    <span class="spacer"></span>
+    <span class="starwallet">⭐ <b class="starcount2">0</b></span>
+  </div>
+  <div class="instruction">
+    <span class="txt" id="g5txt">これは どっちの なかま かな?</span>
+    <button class="speakbtn" data-say="g5txt">🔈</button>
+  </div>
+  <div class="playarea">
+    <div id="g5left"></div>
+    <div id="g5item"></div>
+  </div>
+  <div class="baskets" id="g5baskets"></div>
+</section>
+
+<!-- ================= GAME 6 ================= -->
+<section class="screen" id="g6">
+  <div class="topbar">
+    <button class="chipbtn backbtn">🏠</button>
+    <span class="spacer"></span>
+    <div class="roundpips" id="g6pips"></div>
+    <span class="spacer"></span>
+    <span class="starwallet">⭐ <b class="starcount2">0</b></span>
+  </div>
+  <div class="instruction">
+    <span class="txt" id="g6txt">さがしてみよう!</span>
+    <button class="speakbtn" data-say="g6txt">🔈</button>
+  </div>
+  <div class="playarea">
+    <div class="shapegrid" id="g6grid"></div>
+  </div>
+</section>
+
+<!-- ================= WIN OVERLAY ================= -->
+<div id="overlay" class="modal">
+  <div class="wincard">
+    <svg class="mascot" viewBox="0 0 100 110" style="width:96px" aria-hidden="true">
+      <line x1="50" y1="4" x2="50" y2="18" stroke="#2B3A67" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="50" cy="6" r="6" fill="#FF6B6B"/>
+      <rect x="16" y="18" width="68" height="52" rx="18" fill="#37B5C9"/>
+      <rect x="26" y="28" width="48" height="30" rx="12" fill="#FFFDF5"/>
+      <path d="M36 42 Q41 37 46 42" stroke="#2B3A67" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M54 42 Q59 37 64 42" stroke="#2B3A67" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M40 49 Q50 60 60 49" stroke="#2B3A67" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <rect x="30" y="74" width="40" height="26" rx="12" fill="#FFCF3F"/>
+      <circle cx="24" cy="87" r="7" fill="#FF6B6B"/>
+      <circle cx="76" cy="87" r="7" fill="#FF6B6B"/>
+    </svg>
+    <div class="praise" id="praisetxt">すごい!</div>
+    <div class="wstars" id="winstars">⭐</div>
+    <button class="nextbtn" id="nextbtn">つぎへ ▶</button>
+  </div>
+</div>
+
+<!-- ================= FRIEND UNLOCK ================= -->
+<div id="friendol" class="modal">
+  <div class="wincard">
+    <div class="bigfriend" id="friendemoji">🐤</div>
+    <div class="praise" style="font-size:clamp(24px,5.5vmin,40px)">あたらしい おともだち!</div>
+    <div id="friendname" style="font-size:clamp(20px,4.4vmin,30px);font-weight:800"></div>
+    <button class="nextbtn" id="friendok">やったー!</button>
+  </div>
+</div>
+
+<!-- ================= PARENT MODAL ================= -->
+<div id="parent" class="modal">
+  <div class="parentcard">
+    <h2>おうちの方へ</h2>
+    <p>このアプリは、遊びを通して「アルゴリズム的思考(考える手順)」の土台を育てることを目指しています。</p>
+    <dl>
+      <dt>🚂 すうじのきしゃ</dt>
+      <dd>数の順序。「順番に処理する」というプログラミングの基本です。</dd>
+      <dt>🦒 せいくらべ</dt>
+      <dd>「残りの中からいちばん小さいものを選ぶ」の繰り返し=並び替え手法「選択ソート」の体験です。むずかしいモードでは「大きい順」も登場します。</dd>
+      <dt>🍎 つぎはなあに?</dt>
+      <dd>繰り返しの規則(パターン)を見つける力。難易度が上がると AAB・AABB などの複雑なパターンになります。</dd>
+      <dt>🤖 ロボットのおつかい</dt>
+      <dd>手順を組み立ててから実行する「計画→実行→修正」の体験。むずかしいモードでは岩をよけるルート探しが加わります。</dd>
+      <dt>🧺 なかまわけ</dt>
+      <dd>ものをグループに分ける「分類」。データを仲間ごとに整理する考え方の基礎です。</dd>
+      <dt>🔍 かたちさがし</dt>
+      <dd>「あかい まる」のように条件を組み合わせて探す、条件判定(AND)の体験です。</dd>
+    </dl>
+    <p style="margin-top:12px">
+      ⚙️(せってい)から難易度・プレイ時間の変更ができます。設定と時間切れ後のリセットには暗証番号が必要です(初期値: <b>1234</b>)。
+      🔈ボタンで指示を読み上げるので、文字が読めなくても遊べます。1日のプレイ時間は日付が変わるとリセットされます。
+    </p>
+    <button class="close" id="parentclose">とじる</button>
+  </div>
+</div>
+
+<!-- ================= OPTIONS ================= -->
+<div id="options" class="modal">
+  <div class="optcard">
+    <h2>⚙️ せってい</h2>
+    <div class="optrow">
+      <span class="optlabel">むずかしさ</span>
+      <div class="seg" id="optdiff">
+        <button data-v="0">⭐ かんたん</button>
+        <button data-v="1">⭐⭐ ふつう</button>
+        <button data-v="2">⭐⭐⭐ むずかしい</button>
+      </div>
+    </div>
+    <div class="optrow">
+      <span class="optlabel">あそべる じかん(1にち)</span>
+      <div class="seg" id="optlimit">
+        <button data-v="5">5ふん</button>
+        <button data-v="10">10ふん</button>
+        <button data-v="15">15ふん</button>
+        <button data-v="20">20ふん</button>
+        <button data-v="30">30ふん</button>
+        <button data-v="0">せいげん なし</button>
+      </div>
+    </div>
+    <div class="optrow">
+      <span class="optlabel">こえの はやさ</span>
+      <div class="seg" id="optrate">
+        <button data-v="slow">ゆっくり</button>
+        <button data-v="normal">ふつう</button>
+      </div>
+    </div>
+    <div class="optrow">
+      <span class="optlabel">あんしょうばんごう</span>
+      <button class="optbtn" id="pinchange">ばんごうを かえる</button>
+    </div>
+    <button class="optclose" id="optclose">とじる</button>
+  </div>
+</div>
+
+<!-- ================= PIN PAD ================= -->
+<div id="pad" class="modal">
+  <div class="padcard">
+    <div id="padtitle">あんしょうばんごうは?</div>
+    <div id="paddots">○○○○</div>
+    <div class="padgrid" id="padgrid"></div>
+  </div>
+</div>
+
+<!-- ================= TIME UP ================= -->
+<div id="timeup" class="modal">
+  <div class="sleepcard">
+    <div class="zzz">🤖💤</div>
+    <h2>きょうは ここまで!</h2>
+    <p>アルゴくんも ねむく なっちゃった。<br>また あとで あそぼうね!</p>
+    <button class="resetbtn" id="timereset">🔑 リセット(おうちのひと よう)</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   utilities
+============================================================ */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const delay = ms => new Promise(r => setTimeout(r, ms));
+const shuffle = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const mem = {}; // fallback when localStorage is unavailable (private mode, some file:// setups)
+const store = {
+  get(k, d) {
+    try {
+      const v = localStorage.getItem('algo4.' + k);
+      return v === null ? (k in mem ? mem[k] : d) : v;
+    } catch (e) { return k in mem ? mem[k] : d; }
+  },
+  set(k, v) {
+    mem[k] = String(v);
+    try { localStorage.setItem('algo4.' + k, String(v)); } catch (e) {}
+  },
+};
+
+/* screen-change epoch: pending timeouts / async loops from a left screen must not fire */
+let epoch = 0;
+function later(ms, fn) {
+  const e = epoch;
+  setTimeout(() => { if (e === epoch) fn(); }, ms);
+}
+
+/* ============================================================
+   settings
+============================================================ */
+let diff = Math.min(2, Math.max(0, parseInt(store.get('diff', '1'), 10) || 0));
+let limitMin = parseInt(store.get('limit', '15'), 10); if (isNaN(limitMin)) limitMin = 15;
+let pin = store.get('pin', '1234');
+let rateOpt = store.get('rate', 'normal');
+let muted = store.get('muted', '0') === '1';
+
+/* ============================================================
+   sound (Web Audio, no assets)
+============================================================ */
+let ac = null;
+function ensureAC() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  if (!ac) ac = new AC();
+  if (ac.state === 'suspended') ac.resume();
+}
+function tone(freq, at, dur, type = 'sine', vol = 0.18) {
+  if (muted || !ac) return;
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(vol, ac.currentTime + at);
+  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + at + dur);
+  o.connect(g).connect(ac.destination);
+  o.start(ac.currentTime + at); o.stop(ac.currentTime + at + dur + 0.05);
+}
+const sfx = {
+  tap()  { tone(620, 0, .07, 'triangle', .12); },
+  step(n){ tone(420 + n * 55, 0, .16, 'triangle', .18); },
+  good() { tone(523, 0, .12, 'triangle'); tone(659, .09, .12, 'triangle'); tone(784, .18, .2, 'triangle'); },
+  bad()  { tone(200, 0, .2, 'sawtooth', .08); tone(160, .12, .25, 'sawtooth', .08); },
+  win()  { [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone(f, i * .11, .22, 'triangle', .2)); },
+  sleep(){ [660, 520, 392].forEach((f, i) => tone(f, i * .3, .4, 'sine', .15)); }
+};
+document.addEventListener('pointerdown', ensureAC, { capture: true });
+
+/* ============================================================
+   speech — pick a real Japanese voice for natural intonation
+============================================================ */
+let jaVoice = null;
+function pickJaVoice() {
+  if (!('speechSynthesis' in window)) return;
+  const vs = speechSynthesis.getVoices().filter(v => (v.lang || '').toLowerCase().startsWith('ja'));
+  jaVoice =
+    vs.find(v => /Nanami/i.test(v.name)) ||           // Edge natural voice
+    vs.find(v => /natural/i.test(v.name)) ||
+    vs.find(v => /Google/i.test(v.name)) ||           // Chrome Google 日本語
+    vs.find(v => /O-?ren|Kyoko|Otoya/i.test(v.name))||// Safari
+    vs[0] || null;
+}
+if ('speechSynthesis' in window) {
+  pickJaVoice();
+  speechSynthesis.onvoiceschanged = pickJaVoice;
+}
+function speak(text) {
+  if (muted || !('speechSynthesis' in window)) return;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ja-JP';
+    if (jaVoice) u.voice = jaVoice;
+    u.rate = rateOpt === 'slow' ? 0.78 : 0.95;
+    u.pitch = 1.1;
+    speechSynthesis.speak(u);
+  } catch (e) { /* no voice available */ }
+}
+$$('.speakbtn').forEach(b => b.addEventListener('click', () => {
+  sfx.tap();
+  speak($('#' + b.dataset.say).textContent);
+}));
+
+const muteBtn = $('#mutebtn');
+function renderMute() { muteBtn.textContent = muted ? '🔇' : '🔊'; }
+muteBtn.addEventListener('click', () => {
+  muted = !muted;
+  store.set('muted', muted ? '1' : '0');
+  if (muted && 'speechSynthesis' in window) speechSynthesis.cancel();
+  renderMute(); if (!muted) sfx.good();
+});
+renderMute();
+
+/* ============================================================
+   stars & friends (collection rewards)
+============================================================ */
+let stars = parseInt(store.get('stars', '0'), 10) || 0;
+const FRIENDS = [
+  { at: 3,  e: '🐤', n: 'ひよこの ピヨ' },
+  { at: 6,  e: '🐰', n: 'うさぎの ミミ' },
+  { at: 10, e: '🐼', n: 'パンダの タンタン' },
+  { at: 15, e: '🦊', n: 'きつねの コンタ' },
+  { at: 20, e: '🐸', n: 'かえるの ケロッピ' },
+  { at: 26, e: '🦁', n: 'らいおんの ガオくん' },
+  { at: 33, e: '🐘', n: 'ぞうの パオちゃん' },
+  { at: 40, e: '🦄', n: 'ユニコーンの キララ' },
+  { at: 50, e: '🐲', n: 'ドラゴンの リュウ' },
+];
+let pendingFriend = null;
+
+function renderStars() {
+  $('#starcount').textContent = stars;
+  $$('.starcount2').forEach(e => e.textContent = stars);
+  renderFriends();
+}
+function addStar() {
+  stars++;
+  store.set('stars', stars);
+  const justUnlocked = FRIENDS.find(f => f.at === stars);
+  if (justUnlocked) pendingFriend = justUnlocked;
+  renderStars();
+}
+function renderFriends() {
+  const row = $('#friendrow');
+  row.innerHTML = '<span class="rowlabel">おともだち</span>';
+  let nextLocked = null;
+  FRIENDS.forEach(f => {
+    if (stars >= f.at) {
+      const b = document.createElement('button');
+      b.className = 'friend';
+      b.textContent = f.e;
+      b.addEventListener('click', () => { sfx.good(); speak(f.n + 'だよ!'); b.classList.remove('arrive'); void b.offsetWidth; b.classList.add('arrive'); });
+      row.appendChild(b);
+    } else if (!nextLocked) {
+      nextLocked = f;
+      const s = document.createElement('span');
+      s.className = 'friend locked';
+      s.innerHTML = '❓<small>あと⭐' + (f.at - stars) + '</small>';
+      row.appendChild(s);
+    }
+  });
+  // milestone decorations next to the title
+  $('#decor').textContent = stars >= 50 ? '🌈🏰' : stars >= 25 ? '🌈' : '';
+}
+renderStars();
+
+/* ============================================================
+   play-time limit (per day) with parental PIN reset
+============================================================ */
+let locked = false;
+let playSec = 0;
+function localDay() { // local date, not UTC — the reset should happen at the child's midnight
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+let curDay = localDay();
+(function initTimer() {
+  if (store.get('playDate', '') !== curDay) {
+    store.set('playDate', curDay);
+    store.set('playSec', '0');
+  }
+  playSec = parseInt(store.get('playSec', '0'), 10) || 0;
+})();
+function renderTimer() {
+  const el = $('#timerchip');
+  if (!limitMin) { el.textContent = '⏱ ∞'; return; }
+  const rem = Math.max(0, limitMin * 60 - playSec);
+  el.textContent = '⏱ ' + Math.ceil(rem / 60) + 'ふん';
+}
+function lockApp() {
+  if (locked) return;
+  locked = true;
+  epoch++; // kill pending round-finish timers and the robot run loop
+  store.set('playSec', playSec);
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  // nothing may stay interactive above or below the lock
+  closePad();
+  ['options', 'overlay', 'friendol', 'parent'].forEach(id => $('#' + id).classList.remove('active'));
+  pendingFriend = null; onNextCb = null;
+  $('#timeup').classList.add('active');
+  sfx.sleep();
+  speak('きょうは ここまで。また あとで あそぼうね');
+}
+function unlockApp() {
+  playSec = 0;
+  store.set('playSec', '0');
+  locked = false;
+  $('#timeup').classList.remove('active');
+  renderTimer();
+}
+setInterval(() => {
+  const day = localDay();
+  if (day !== curDay) { // midnight passed while the page stayed open
+    curDay = day;
+    store.set('playDate', curDay);
+    unlockApp();
+    return;
+  }
+  if (document.hidden || locked) return;
+  if (!limitMin) { renderTimer(); return; }
+  playSec++;
+  if (playSec % 10 === 0) store.set('playSec', playSec);
+  renderTimer();
+  if (playSec >= limitMin * 60) lockApp();
+}, 1000);
+renderTimer();
+// deferred: lockApp touches state declared later in this script (pad, overlay callbacks)
+setTimeout(() => { if (limitMin && playSec >= limitMin * 60) lockApp(); }, 0);
+
+$('#timereset').addEventListener('click', () => {
+  askPin(() => {
+    unlockApp();
+    sfx.win();
+    speak('おかえり!また あそぼう!');
+  });
+});
+
+/* ============================================================
+   PIN pad
+============================================================ */
+let padCb = null, padBuf = '', padLock = false, padTimer = null;
+(function buildPad() {
+  const grid = $('#padgrid');
+  ['1','2','3','4','5','6','7','8','9','⌫','0','✕'].forEach(k => {
+    const b = document.createElement('button');
+    b.textContent = k;
+    b.addEventListener('click', () => {
+      sfx.tap();
+      if (k === '✕') { closePad(); return; } // cancel always wins, even mid-confirm
+      if (padLock) return; // 4 digits already entered — waiting for the confirm timeout
+      if (k === '⌫') { padBuf = padBuf.slice(0, -1); renderPadDots(); return; }
+      padBuf += k;
+      renderPadDots();
+      if (padBuf.length === 4) {
+        padLock = true;
+        const v = padBuf;
+        padTimer = setTimeout(() => {
+          const cb = padCb;
+          closePad();
+          if (cb) cb(v);
+        }, 180);
+      }
+    });
+    grid.appendChild(b);
+  });
+})();
+function renderPadDots() {
+  $('#paddots').textContent = '●'.repeat(padBuf.length) + '○'.repeat(4 - padBuf.length);
+}
+function openPad(title, cb) {
+  padCb = cb; padBuf = ''; padLock = false;
+  $('#padtitle').textContent = title;
+  renderPadDots();
+  $('#pad').classList.add('active');
+}
+function closePad() {
+  if (padTimer) { clearTimeout(padTimer); padTimer = null; }
+  padCb = null; padBuf = ''; padLock = false;
+  $('#pad').classList.remove('active');
+}
+function askPin(onOk, title) {
+  openPad(title || 'あんしょうばんごうを いれてね', v => {
+    if (v === pin) { onOk(); }
+    else { sfx.bad(); askPin(onOk, 'ちがうみたい。もういちど!'); }
+  });
+}
+
+/* ============================================================
+   options (PIN-gated)
+============================================================ */
+$('#gearbtn').addEventListener('click', () => {
+  sfx.tap();
+  askPin(() => { renderOptions(); $('#options').classList.add('active'); });
+});
+$('#optclose').addEventListener('click', () => { sfx.tap(); $('#options').classList.remove('active'); });
+function renderOptions() {
+  $$('#optdiff button').forEach(b => b.classList.toggle('on', +b.dataset.v === diff));
+  $$('#optlimit button').forEach(b => b.classList.toggle('on', +b.dataset.v === limitMin));
+  $$('#optrate button').forEach(b => b.classList.toggle('on', b.dataset.v === rateOpt));
+}
+$$('#optdiff button').forEach(b => b.addEventListener('click', () => {
+  sfx.tap(); diff = +b.dataset.v; store.set('diff', diff); renderOptions();
+}));
+$$('#optlimit button').forEach(b => b.addEventListener('click', () => {
+  sfx.tap(); limitMin = +b.dataset.v; store.set('limit', limitMin); renderOptions(); renderTimer();
+}));
+$$('#optrate button').forEach(b => b.addEventListener('click', () => {
+  sfx.tap(); rateOpt = b.dataset.v; store.set('rate', rateOpt); renderOptions();
+  speak('こんにちは!アルゴランドへ ようこそ!');
+}));
+$('#pinchange').addEventListener('click', () => {
+  sfx.tap();
+  openPad('あたらしい 4けたの ばんごう', v1 => {
+    openPad('かくにん:もういちど おなじ ばんごう', v2 => {
+      if (v1 === v2) {
+        pin = v1; store.set('pin', v1);
+        sfx.good(); speak('あんしょうばんごうを かえたよ');
+      } else {
+        sfx.bad(); speak('そろわなかったよ。もういちど やってね');
+      }
+    });
+  });
+});
+
+/* ============================================================
+   router
+============================================================ */
+function show(id) {
+  epoch++; // invalidate pending timeouts / async loops of the screen we leave
+  $$('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+}
+$$('.backbtn').forEach(b => b.addEventListener('click', () => { sfx.tap(); show('home'); }));
+$$('.card').forEach(c => c.addEventListener('click', () => {
+  sfx.tap();
+  const g = c.dataset.game;
+  show(g);
+  games[g].start();
+}));
+$('#parentbtn').addEventListener('click', () => $('#parent').classList.add('active'));
+$('#parentclose').addEventListener('click', () => $('#parent').classList.remove('active'));
+
+function renderPips(el, total, done) {
+  el.innerHTML = '';
+  for (let i = 0; i < total; i++) {
+    const p = document.createElement('i');
+    if (i < done) p.classList.add('done');
+    el.appendChild(p);
+  }
+}
+
+/* ============================================================
+   celebration + friend unlock chain
+============================================================ */
+const PRAISES = ['すごい!', 'やったね!', 'てんさい!', 'かんぺき!', 'さすが!', 'よくできました!'];
+function confettiBurst() {
+  const em = ['🎉', '⭐', '✨', '🎈', '💛', '💙'];
+  for (let i = 0; i < 26; i++) {
+    const s = document.createElement('span');
+    s.className = 'confetti';
+    s.textContent = pick(em);
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.animationDuration = (1.4 + Math.random() * 1.4) + 's';
+    s.style.animationDelay = (Math.random() * .4) + 's';
+    s.style.fontSize = (18 + Math.random() * 22) + 'px';
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 3400);
+  }
+}
+let onNextCb = null;
+function celebrate(big, onNext) {
+  addStar();
+  const praise = pick(PRAISES);
+  $('#praisetxt').textContent = praise;
+  $('#winstars').textContent = big ? '⭐⭐⭐' : '⭐';
+  $('#nextbtn').textContent = big ? 'おしまい 🏠' : 'つぎへ ▶';
+  onNextCb = onNext;
+  $('#overlay').classList.add('active');
+  sfx.win(); confettiBurst();
+  speak(praise);
+}
+function runNext() {
+  if (onNextCb) { const cb = onNextCb; onNextCb = null; cb(); }
+}
+$('#nextbtn').addEventListener('click', () => {
+  sfx.tap();
+  $('#overlay').classList.remove('active');
+  if (pendingFriend) {
+    const f = pendingFriend; pendingFriend = null;
+    $('#friendemoji').textContent = f.e;
+    $('#friendname').textContent = f.n;
+    $('#friendol').classList.add('active');
+    sfx.win(); confettiBurst();
+    speak('あたらしい おともだち、' + f.n + 'が きたよ!');
+  } else {
+    runNext();
+  }
+});
+$('#friendok').addEventListener('click', () => {
+  sfx.tap();
+  $('#friendol').classList.remove('active');
+  runNext();
+});
+
+const games = {};
+
+/* helper: end-of-round flow shared by all games */
+function finishRound(isLastRound, advance) {
+  celebrate(isLastRound, () => {
+    if (isLastRound) show('home'); else advance();
+  });
+}
+
+/* ============================================================
+   GAME 1 — すうじのきしゃ
+============================================================ */
+games.g1 = (() => {
+  const CFG = [
+    [3, 4, 5],
+    [3, 5, 7, 10],
+    [5, 8, 10, 12],
+  ];
+  const COLORS = ['#FF6B6B', '#37B5C9', '#5FCB71', '#9B5DE5', '#FF9F45', '#F45B9E'];
+  let rounds = [], round = 0, expected = 1, wrongCount = 0;
+
+  function start() { rounds = CFG[diff]; round = 0; startRound(); }
+
+  function startRound() {
+    expected = 1; wrongCount = 0;
+    renderPips($('#g1pips'), rounds.length, round);
+    const n = rounds[round];
+    $('#g1').style.setProperty('--bsz', n > 10 ? 'clamp(52px,10vmin,84px)' : 'clamp(62px,13vmin,104px)');
+    $('#g1txt').textContent = `すうじを 1から ${n}まで じゅんばんに タッチ!`;
+    speak('すうじを いちから じゅんばんに タッチしてね');
+    const area = $('#g1area');
+    area.innerHTML = '';
+    $('#g1train').innerHTML = '<span class="engine">🚂</span>';
+
+    const rows = n > 10 ? 4 : 3, cols = 4;
+    const cells = [];
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) cells.push([c, r]);
+    const spots = shuffle(cells).slice(0, n);
+    const yStep = rows === 4 ? 23 : 30;
+    shuffle([...Array(n)].map((_, i) => i + 1)).forEach((num, i) => {
+      const [c, r] = spots[i];
+      const b = document.createElement('button');
+      b.className = 'balloon';
+      b.textContent = num;
+      b.dataset.num = num;
+      b.style.background = COLORS[num % COLORS.length];
+      b.style.left = `calc(${6 + c * 24}% + ${Math.random() * 4}%)`;
+      b.style.top = `calc(${3 + r * yStep}% + ${Math.random() * 5}%)`;
+      b.addEventListener('click', () => onTap(b));
+      area.appendChild(b);
+    });
+  }
+
+  function onTap(b) {
+    const num = +b.dataset.num;
+    if (num !== expected) {
+      wrongCount++;
+      sfx.bad();
+      b.classList.remove('wobble'); void b.offsetWidth;
+      b.classList.add('wobble');
+      if (wrongCount >= 2) {
+        const hint = $(`#g1area .balloon[data-num="${expected}"]`);
+        if (hint) hint.classList.add('hintpulse');
+        speak(`つぎは ${expected} だよ`);
+      }
+      return;
+    }
+    wrongCount = 0;
+    sfx.step(num);
+    b.classList.add('popaway');
+    b.disabled = true;
+    setTimeout(() => b.remove(), 350);
+    const car = document.createElement('span');
+    car.className = 'traincar arrive';
+    car.style.setProperty('--car-c', COLORS[num % COLORS.length]);
+    car.textContent = num;
+    $('#g1train').appendChild(car);
+    $('#g1train').scrollLeft = 99999;
+    expected++;
+    if (expected > rounds[round]) {
+      later(600, () => finishRound(round === rounds.length - 1, () => { round++; startRound(); }));
+    }
+  }
+  return { start };
+})();
+
+/* ============================================================
+   GAME 2 — せいくらべ (selection sort; hard mode adds 大きい順)
+============================================================ */
+games.g2 = (() => {
+  const CFG = [
+    [{ n: 3 }, { n: 3 }, { n: 4 }],
+    [{ n: 3 }, { n: 4 }, { n: 5 }],
+    [{ n: 4 }, { n: 5, rev: true }, { n: 6 }, { n: 6, rev: true }],
+  ];
+  const THEMES = ['🦒', '🌲', '🚀', '🐧', '🏰', '🌻'];
+  let rounds = [], round = 0, nextI = 0, wrongCount = 0, rev = false, count = 0;
+
+  const fontFor = (rank, n) => Math.round(32 + rank * (60 / Math.max(n - 1, 1)));
+  const targetRank = i => rev ? count - 1 - i : i;
+
+  function start() { rounds = CFG[diff]; round = 0; startRound(); }
+
+  function startRound() {
+    const cfg = rounds[round];
+    count = cfg.n; rev = !!cfg.rev;
+    nextI = 0; wrongCount = 0;
+    renderPips($('#g2pips'), rounds.length, round);
+    const emoji = pick(THEMES);
+    $('#g2txt').textContent = rev ? 'いちばん おおきいのを タッチ!' : 'いちばん ちいさいのを タッチ!';
+    speak(rev
+      ? 'こんどは おおきい じゅんばん!いちばん おおきいのを タッチしてね'
+      : 'ちいさい じゅんばんに ならべよう。いちばん ちいさいのを タッチしてね');
+
+    const lineup = $('#g2lineup'); lineup.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+      const s = document.createElement('div');
+      s.className = 'slot';
+      const sz = fontFor(targetRank(i), count);
+      s.style.height = (sz + 26) + 'px';
+      s.style.minWidth = (sz + 26) + 'px';
+      lineup.appendChild(s);
+    }
+    const pool = $('#g2pool'); pool.innerHTML = '';
+    shuffle([...Array(count)].map((_, i) => i)).forEach(rank => {
+      const it = document.createElement('button');
+      it.className = 'hitem';
+      it.textContent = emoji;
+      it.dataset.rank = rank;
+      it.style.fontSize = fontFor(rank, count) + 'px';
+      it.addEventListener('click', () => onTap(it));
+      pool.appendChild(it);
+    });
+  }
+
+  function onTap(it) {
+    const rank = +it.dataset.rank;
+    if (rank !== targetRank(nextI)) {
+      wrongCount++;
+      sfx.bad();
+      it.classList.remove('wobble'); void it.offsetWidth;
+      it.classList.add('wobble');
+      if (wrongCount >= 2) {
+        const hint = $(`#g2pool .hitem[data-rank="${targetRank(nextI)}"]`);
+        if (hint) hint.classList.add('hintpulse');
+      }
+      return;
+    }
+    wrongCount = 0;
+    $$('#g2pool .hintpulse').forEach(e => e.classList.remove('hintpulse'));
+    sfx.step(nextI + 1);
+    const slot = $$('#g2lineup .slot')[nextI];
+    it.disabled = true;
+    it.classList.remove('wobble');
+    it.classList.add('arrive');
+    slot.appendChild(it);
+    slot.classList.add('filled');
+    nextI++;
+    if (nextI < count) {
+      $('#g2txt').textContent = rev ? 'つぎに おおきいのは どれかな?' : 'つぎに ちいさいのは どれかな?';
+    } else {
+      later(600, () => finishRound(round === rounds.length - 1, () => { round++; startRound(); }));
+    }
+  }
+  return { start };
+})();
+
+/* ============================================================
+   GAME 3 — つぎはなあに? (patterns per difficulty)
+============================================================ */
+games.g3 = (() => {
+  const SETS = [
+    [ // easy: AB only
+      { unit: ['🍎', '🍌'], extra: '🍇' },
+      { unit: ['🐶', '🐱'], extra: '🐰' },
+      { unit: ['🔴', '🔵'], extra: '🟡' },
+      { unit: ['⚽', '🏀'], extra: '🎾' },
+      { unit: ['🚗', '🚌'], extra: '🚓' },
+    ],
+    [ // normal: AB, ABC, AAB
+      { unit: ['🍎', '🍌'], extra: '🍇' },
+      { unit: ['🐶', '🐱'], extra: '🐰' },
+      { unit: ['🔴', '🟡', '🔵'], extra: '🟢' },
+      { unit: ['🍓', '🍓', '🍈'], extra: '🍊' },
+      { unit: ['🚗', '🚌', '🚓'], extra: '🚒' },
+    ],
+    [ // hard: AAB, ABC, AABB, ABB, ABCD
+      { unit: ['🍓', '🍓', '🍈'], extra: '🍊' },
+      { unit: ['🔴', '🟡', '🔵'], extra: '🟢' },
+      { unit: ['🍎', '🍎', '🍌', '🍌'], extra: '🍇' },
+      { unit: ['🐶', '🐱', '🐱'], extra: '🐰' },
+      { unit: ['🚗', '🚌', '🚓', '🚒'], extra: '🚲' },
+    ],
+  ];
+  let rounds = [], round = 0;
+
+  function start() { rounds = SETS[diff]; round = 0; startRound(); }
+
+  function startRound() {
+    renderPips($('#g3pips'), rounds.length, round);
+    $('#g3txt').textContent = 'つぎに くるのは なあに?';
+    speak('ならびかたを よくみてね。つぎに くるのは なあに?');
+    const { unit, extra } = rounds[round];
+    const shownLen = unit.length * 2 + 1;
+    const seq = [];
+    for (let i = 0; i < shownLen; i++) seq.push(unit[i % unit.length]);
+    const answer = unit[shownLen % unit.length];
+
+    const row = $('#g3seq'); row.innerHTML = '';
+    seq.forEach(e => {
+      const c = document.createElement('div');
+      c.className = 'seqcell'; c.textContent = e;
+      row.appendChild(c);
+    });
+    const q = document.createElement('div');
+    q.className = 'seqcell q'; q.textContent = '?';
+    row.appendChild(q);
+
+    const family = [...new Set([...unit, extra])];
+    const opts = shuffle([answer, ...shuffle(family.filter(x => x !== answer)).slice(0, 2)]);
+    const ch = $('#g3choices'); ch.innerHTML = '';
+    opts.forEach(e => {
+      const b = document.createElement('button');
+      b.className = 'choice'; b.textContent = e;
+      b.addEventListener('click', () => onPick(b, e, answer, q));
+      ch.appendChild(b);
+    });
+  }
+
+  function onPick(btn, e, answer, qcell) {
+    if (e !== answer) {
+      sfx.bad();
+      btn.classList.remove('wobble'); void btn.offsetWidth;
+      btn.classList.add('wobble');
+      return;
+    }
+    sfx.good();
+    qcell.classList.remove('q');
+    qcell.textContent = answer;
+    qcell.classList.add('arrive');
+    $$('#g3choices .choice').forEach(b => b.disabled = true);
+    later(700, () => finishRound(round === rounds.length - 1, () => { round++; startRound(); }));
+  }
+  return { start };
+})();
+
+/* ============================================================
+   GAME 4 — ロボットのおつかい (hard mode adds rocks)
+============================================================ */
+games.g4 = (() => {
+  const COLS = 5, ROWS = 3;
+  const LV = [
+    [ { g: [1, 0] }, { g: [2, 0] }, { g: [0, 1] }, { g: [2, 1] } ],
+    [ { g: [2, 0] }, { g: [1, 1] }, { g: [3, 1] }, { g: [2, 2] }, { g: [4, 2] } ],
+    [
+      { g: [2, 1], rocks: [[1, 0]] },
+      { g: [3, 1], rocks: [[0, 1], [2, 0]] },
+      { g: [2, 2], rocks: [[1, 1]] },
+      { g: [4, 2], rocks: [[2, 2], [3, 1]] },
+      { g: [4, 1], rocks: [[1, 1], [3, 0]] },
+    ],
+  ];
+  const DECO = ['🌸', '🌼', '🍄', '🌷'];
+  let levels = [], level = 0, queue = [], running = false;
+  let rc = 0, rr = 0; // robot logical position
+
+  function start() { levels = LV[diff]; level = 0; buildLevel(); }
+
+  function cellPx() {
+    const cell = $('#g4grid .rcell');
+    return cell ? cell.getBoundingClientRect().width : 60;
+  }
+  function placeRobot(c, r, instant) {
+    rc = c; rr = r;
+    const rb = $('#robot');
+    if (instant) rb.style.transition = 'none';
+    rb.style.left = (c * cellPx()) + 'px';
+    rb.style.top = ((ROWS - 1 - r) * cellPx()) + 'px';
+    if (instant) { void rb.offsetWidth; rb.style.transition = ''; }
+  }
+  const isRock = (lv, c, r) => (lv.rocks || []).some(([rc2, rr2]) => rc2 === c && rr2 === r);
+
+  function buildLevel() {
+    queue = []; running = false;
+    renderPips($('#g4pips'), levels.length, level);
+    speak('やじるしを ならべて、ロボットを ほしまで つれていってね');
+    const lv = levels[level];
+    const grid = $('#g4grid');
+    grid.style.gridTemplateColumns = `repeat(${COLS}, var(--cell))`;
+    grid.innerHTML = '';
+    for (let r = ROWS - 1; r >= 0; r--) {
+      for (let c = 0; c < COLS; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'rcell' + ((c + r) % 2 ? ' alt' : '');
+        if (c === lv.g[0] && r === lv.g[1]) cell.textContent = '⭐';
+        else if (isRock(lv, c, r)) cell.textContent = '🪨';
+        else if (!(c === 0 && r === 0) && Math.random() < 0.1) cell.textContent = pick(DECO);
+        grid.appendChild(cell);
+      }
+    }
+    placeRobot(0, 0, true);
+    renderQueue();
+  }
+
+  function renderQueue() {
+    const q = $('#g4queue'); q.innerHTML = '';
+    if (queue.length === 0) {
+      const hint = document.createElement('span');
+      hint.style.opacity = '.45'; hint.style.fontSize = '15px';
+      hint.textContent = 'ここに めいれいが ならぶよ';
+      q.appendChild(hint);
+      return;
+    }
+    queue.forEach((d, i) => {
+      const chip = document.createElement('button');
+      chip.className = 'cmdchip arrive';
+      chip.textContent = d === 'up' ? '⬆️' : '➡️';
+      chip.addEventListener('click', () => {
+        if (running) return;
+        sfx.tap(); queue.splice(i, 1); renderQueue();
+      });
+      q.appendChild(chip);
+    });
+  }
+
+  $$('#g4 .arrowbtn').forEach(b => b.addEventListener('click', () => {
+    if (running || queue.length >= 9) return;
+    sfx.tap();
+    queue.push(b.dataset.dir);
+    renderQueue();
+  }));
+
+  $('#g4go').addEventListener('click', async () => {
+    if (running) return;
+    if (queue.length === 0) {
+      sfx.bad();
+      const q = $('#g4queue');
+      q.classList.remove('wobble'); void q.offsetWidth; q.classList.add('wobble');
+      speak('やじるしを おしてから、ゴーだよ');
+      return;
+    }
+    running = true;
+    sfx.tap();
+    const e = epoch; // abort silently if the child leaves this screen mid-run
+    const lv = levels[level];
+    let c = 0, r = 0, failed = false;
+    placeRobot(0, 0, true);
+    await delay(150);
+    if (e !== epoch) return;
+    for (let i = 0; i < queue.length; i++) {
+      const d = queue[i];
+      const nc = c + (d === 'right' ? 1 : 0);
+      const nr = r + (d === 'up' ? 1 : 0);
+      if (nc >= COLS || nr >= ROWS || isRock(lv, nc, nr)) { failed = true; break; }
+      c = nc; r = nr;
+      sfx.step(i + 1);
+      placeRobot(c, r);
+      await delay(440);
+      if (e !== epoch) return;
+      if (c === lv.g[0] && r === lv.g[1]) break;
+    }
+    if (!failed && c === lv.g[0] && r === lv.g[1]) {
+      await delay(250);
+      if (e !== epoch) return;
+      running = false;
+      finishRound(level === levels.length - 1, () => { level++; buildLevel(); });
+      return;
+    }
+    sfx.bad();
+    const rb = $('#robot');
+    rb.classList.remove('wobble'); void rb.offsetWidth; rb.classList.add('wobble');
+    speak('あれれ?もういちど かんがえてみよう');
+    await delay(800);
+    if (e !== epoch) return;
+    rb.classList.remove('wobble');
+    placeRobot(0, 0);
+    await delay(450);
+    if (e !== epoch) return;
+    running = false;
+  });
+
+  window.addEventListener('resize', () => {
+    if (!$('#g4').classList.contains('active')) return;
+    placeRobot(rc, rr, true);
+  });
+
+  return { start };
+})();
+
+/* ============================================================
+   GAME 5 — なかまわけ (classification into baskets)
+============================================================ */
+games.g5 = (() => {
+  const CATS = {
+    food:    { icon: '🍽️', label: 'たべもの', c: '#FF9F45', items: ['🍎', '🍌', '🍞', '🍙', '🍰', '🍜', '🍓', '🥕', '🍕', '🍩'] },
+    vehicle: { icon: '🚉', label: 'のりもの', c: '#37B5C9', items: ['🚗', '🚌', '🚒', '🚑', '🚲', '🚁', '🚂', '🚀', '⛵', '🛴'] },
+    animal:  { icon: '🌳', label: 'いきもの', c: '#5FCB71', items: ['🐶', '🐱', '🐰', '🐼', '🐸', '🐘', '🦒', '🐢', '🐞', '🦉'] },
+  };
+  function roundsFor() {
+    const pairs = [['food', 'vehicle'], ['animal', 'food'], ['vehicle', 'animal']];
+    if (diff === 0) return pairs.map(p => ({ cats: p, count: 4 }));
+    if (diff === 1) return pairs.map(p => ({ cats: p, count: 6 }));
+    return [
+      { cats: ['food', 'vehicle'], count: 6 },
+      { cats: ['animal', 'food'], count: 6 },
+      { cats: ['food', 'vehicle', 'animal'], count: 9 },
+    ];
+  }
+  let rounds = [], round = 0, queue = [], current = null;
+
+  function start() { rounds = roundsFor(); round = 0; startRound(); }
+
+  function startRound() {
+    renderPips($('#g5pips'), rounds.length, round);
+    const { cats, count } = rounds[round];
+    $('#g5txt').textContent = cats.length > 2 ? 'これは どこの なかま かな?' : 'これは どっちの なかま かな?';
+    speak('なかまの おうちに いれてあげてね');
+
+    const per = Math.ceil(count / cats.length);
+    let items = [];
+    cats.forEach(cat => {
+      shuffle(CATS[cat].items).slice(0, per).forEach(e => items.push({ e, cat }));
+    });
+    queue = shuffle(items).slice(0, count);
+
+    const bx = $('#g5baskets'); bx.innerHTML = '';
+    cats.forEach(cat => {
+      const b = document.createElement('button');
+      b.className = 'basket';
+      b.style.setProperty('--bk-c', CATS[cat].c);
+      b.innerHTML = `<span class="bicon">${CATS[cat].icon}</span><span class="blabel">${CATS[cat].label}</span>`;
+      b.addEventListener('click', () => onDrop(cat, b));
+      bx.appendChild(b);
+    });
+    next();
+  }
+
+  function next() {
+    current = queue.shift() || null;
+    $('#g5left').textContent = current ? '●'.repeat(queue.length + 1) : '';
+    const el = $('#g5item');
+    if (!current) {
+      el.textContent = '';
+      later(300, () => finishRound(round === rounds.length - 1, () => { round++; startRound(); }));
+      return;
+    }
+    el.textContent = current.e;
+    el.classList.remove('arrive'); void el.offsetWidth;
+    el.classList.add('arrive');
+  }
+
+  function onDrop(cat, basketEl) {
+    if (!current) return;
+    if (cat !== current.cat) {
+      sfx.bad();
+      const el = $('#g5item');
+      el.classList.remove('wobble'); void el.offsetWidth;
+      el.classList.add('wobble');
+      return;
+    }
+    current = null; // consume now — double-taps during the pop animation do nothing
+    sfx.good();
+    basketEl.classList.remove('arrive'); void basketEl.offsetWidth;
+    basketEl.classList.add('arrive');
+    const el = $('#g5item');
+    el.classList.remove('wobble');
+    el.classList.add('popaway');
+    later(350, () => { el.classList.remove('popaway'); next(); });
+  }
+  return { start };
+})();
+
+/* ============================================================
+   GAME 6 — かたちさがし (find by color+shape condition)
+============================================================ */
+games.g6 = (() => {
+  // [key, attributive (before noun), standalone, hex]
+  const COLORS = [
+    ['red', 'あかい', 'あかいの', '#FF6B6B'],
+    ['blue', 'あおい', 'あおいの', '#4D96FF'],
+    ['yellow', 'きいろい', 'きいろいの', '#FFD93D'],
+    ['green', 'みどりの', 'みどりの', '#5FCB71'],
+  ];
+  const SHAPES = [['circle', 'まる'], ['square', 'しかく'], ['triangle', 'さんかく'], ['star', 'ほし']];
+  const N_ROUNDS = 5;
+  let round = 0, target = null;
+
+  function start() { round = 0; startRound(); }
+
+  function comboKey(c, s) { return c[0] + '/' + s[0]; }
+
+  function startRound() {
+    renderPips($('#g6pips'), N_ROUNDS, round);
+    let combos = [];
+    let question = '';
+    if (diff === 0) {
+      const shape = pick(SHAPES);
+      const cols = shuffle(COLORS).slice(0, 4);
+      combos = cols.map(c => ({ c, s: shape }));
+      target = combos[0];
+      question = `${target.c[2]}は どれ?`;
+    } else {
+      const count = diff === 1 ? 6 : 8;
+      const all = [];
+      COLORS.forEach(c => SHAPES.forEach(s => all.push({ c, s })));
+      combos = shuffle(all).slice(0, count);
+      target = pick(combos);
+      if (diff === 2) {
+        // guarantee near-miss distractors: same color/diff shape + same shape/diff color
+        const used = new Set(combos.map(x => comboKey(x.c, x.s)));
+        const nonTarget = combos.filter(x => x !== target);
+        let ri = 0;
+        if (!combos.some(x => x !== target && x.c[0] === target.c[0])) {
+          const s2 = pick(SHAPES.filter(s => s[0] !== target.s[0] && !used.has(comboKey(target.c, s))));
+          if (s2 && nonTarget[ri]) {
+            used.delete(comboKey(nonTarget[ri].c, nonTarget[ri].s));
+            nonTarget[ri].c = target.c; nonTarget[ri].s = s2;
+            used.add(comboKey(target.c, s2)); ri++;
+          }
+        }
+        if (!combos.some(x => x !== target && x.s[0] === target.s[0])) {
+          const c2 = pick(COLORS.filter(c => c[0] !== target.c[0] && !used.has(comboKey(c, target.s))));
+          if (c2 && nonTarget[ri]) {
+            used.delete(comboKey(nonTarget[ri].c, nonTarget[ri].s));
+            nonTarget[ri].c = c2; nonTarget[ri].s = target.s;
+            used.add(comboKey(c2, target.s));
+          }
+        }
+      }
+      question = `${target.c[1]} ${target.s[1]}は どれ?`;
+    }
+    combos = shuffle(combos);
+    $('#g6txt').textContent = question;
+    speak(question);
+
+    const grid = $('#g6grid'); grid.innerHTML = '';
+    combos.forEach(({ c, s }) => {
+      const b = document.createElement('button');
+      b.className = 'shapebtn';
+      const sh = document.createElement('div');
+      sh.className = 'shape ' + s[0];
+      sh.style.background = c[3];
+      b.appendChild(sh);
+      b.addEventListener('click', () => onPick(b, c, s));
+      grid.appendChild(b);
+    });
+  }
+
+  function onPick(btn, c, s) {
+    if (c[0] !== target.c[0] || s[0] !== target.s[0]) {
+      sfx.bad();
+      btn.classList.remove('wobble'); void btn.offsetWidth;
+      btn.classList.add('wobble');
+      return;
+    }
+    sfx.good();
+    btn.classList.add('hintpulse');
+    $$('#g6grid .shapebtn').forEach(b => b.disabled = true);
+    later(600, () => finishRound(round === N_ROUNDS - 1, () => { round++; startRound(); }));
+  }
+  return { start };
+})();
+</script>
+</body>
+</html>
