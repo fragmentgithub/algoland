@@ -51,7 +51,7 @@ function celebrate(big, onNext) {
   onNextCb = onNext;
   $('#overlay').classList.add('active');
   sfx.win(); confettiBurst();
-  speak(praise);
+  speak(kidName ? kidName + '、' + praise : praise);
 }
 function runNext() {
   if (onNextCb) { const cb = onNextCb; onNextCb = null; cb(); }
@@ -65,7 +65,7 @@ $('#nextbtn').addEventListener('click', () => {
     $('#friendname').textContent = f.n;
     $('#friendol').classList.add('active');
     sfx.win(); confettiBurst();
-    speak('あたらしい おともだち、' + f.n + 'が きたよ!');
+    speak((kidName ? kidName + 'に ' : '') + 'あたらしい おともだち、' + f.n + 'が きたよ!');
   } else {
     runNext();
   }

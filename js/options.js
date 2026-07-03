@@ -11,7 +11,14 @@ function renderOptions() {
   $$('#optdiff button').forEach(b => b.classList.toggle('on', +b.dataset.v === diff));
   $$('#optlimit button').forEach(b => b.classList.toggle('on', +b.dataset.v === limitMin));
   $$('#optrate button').forEach(b => b.classList.toggle('on', b.dataset.v === rateOpt));
+  $('#optname').value = kidName;
 }
+$('#optname').addEventListener('change', () => {
+  kidName = $('#optname').value.trim().slice(0, 8);
+  store.set('kidName', kidName);
+  renderKidName();
+  if (kidName) speak(kidName + '、こんにちは!');
+});
 $$('#optdiff button').forEach(b => b.addEventListener('click', () => {
   sfx.tap(); diff = +b.dataset.v; store.set('diff', diff); renderOptions();
 }));

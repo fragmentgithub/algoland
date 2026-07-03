@@ -56,6 +56,10 @@ g4 のロボット実行ループは各 `await` 後に `if (e !== epoch) return;
 | g4 | ロボットのおつかい | 手順の計画・デバッグ | レベル数、diff=2 は岩(rocks)で迂回が必要。⬆️➡️のみ、5x3グリッド、原点(0,0)=左下 |
 | g5 | なかまわけ | 分類 | 個数、diff=2 最終ラウンドはバスケット3個 |
 | g6 | かたちさがし | 条件判定(AND) | 4択色のみ / 6択色+形 / 8択+ニアミス距離の保証ロジックあり |
+| g7 | まちがいさがし | デバッグ | おてほん行と1箇所違う行を比較して修正。列長 4 / 6 / 8 |
+
+g4 のキューは `{dir, times}` オブジェクト。🔁ボタン(diff>=1 のみ表示、buildLevel で切替)が
+最後のチップの times を最大4まで増やす=ループ概念。GO 時にフラット展開して実行。
 
 g4 のレベルを追加する場合: ⬆️➡️だけで到達可能か必ず確認(負方向の移動は存在しない)。
 
@@ -70,7 +74,8 @@ g4 のレベルを追加する場合: ⬆️➡️だけで到達可能か必ず
 
 ## localStorage キー(プレフィックス `algo4.`)
 
-`stars, muted, diff, limit, pin, rate, playDate, playSec`
+`stars, muted, diff, limit, pin, rate, playDate, playSec, kidName`
+`kidName`(既定「そうしん」)はタイトルの「◯◯の」表示と、ほめ言葉・おともだち読み上げの呼びかけに使う。⚙️設定で変更可。
 localStorage が例外を投げる環境用に `store` がメモリ fallback を持つ。直接 localStorage を触らないこと。
 
 ## 検証方法
@@ -90,6 +95,10 @@ localStorage が例外を投げる環境用に `store` がメモリ fallback を
 `gh api -X POST repos/fragmentgithub/algoland/pages/builds`
 → 30秒ほどで `gh api repos/fragmentgithub/algoland/pages/builds/latest` が built になる。
 反映確認は公開URLの `js/core.js` が 200 を返すか+変更内容のgrep。
+
+**PWA/リリース手順(必ず3点セットで上げる)**: ①index.html の `?v=` ②`.app-version` ③`sw.js` の `CACHE`。
+sw.js は stale-while-revalidate(同一オリジンのみ、`ignoreSearch:true`)。新しいJSファイルを
+追加したら sw.js の ASSETS にも追加すること。更新はオンラインで2回目のロードで反映される。
 
 ## 履歴と既知の判断
 

@@ -42,6 +42,8 @@ games.g4 = (() => {
   function buildLevel() {
     queue = []; runEpoch = -1;
     renderPips($('#g4pips'), levels.length, level);
+    // the repeat (loop) button appears from ふつう difficulty up
+    $('#g4loop').style.display = diff >= 1 ? '' : 'none';
     speak('やじるしを ならべて、ロボットを ほしまで つれていってね');
     const lv = levels[level];
     const grid = $('#g4grid');
@@ -70,10 +72,10 @@ games.g4 = (() => {
       q.appendChild(hint);
       return;
     }
-    queue.forEach((d, i) => {
+    queue.forEach((cmd, i) => {
       const chip = document.createElement('button');
       chip.className = 'cmdchip arrive';
-      chip.textContent = d === 'up' ? '⬆️' : '➡️';
+      chip.textContent = (cmd.dir === 'up' ? '⬆️' : '➡️') + (cmd.times > 1 ? '×' + cmd.times : '');
       chip.addEventListener('click', () => {
         if (running()) return;
         sfx.tap(); queue.splice(i, 1); renderQueue();
@@ -82,12 +84,28 @@ games.g4 = (() => {
     });
   }
 
-  $$('#g4 .arrowbtn').forEach(b => b.addEventListener('click', () => {
+  $$('#g4 .arrowbtn[data-dir]').forEach(b => b.addEventListener('click', () => {
     if (running() || queue.length >= 9) return;
     sfx.tap();
-    queue.push(b.dataset.dir);
+    queue.push({ dir: b.dataset.dir, times: 1 });
     renderQueue();
   }));
+
+  // 🔁 repeat: bumps the LAST command up to ×4 — the loop concept, one tap at a time
+  $('#g4loop').addEventListener('click', () => {
+    if (running()) return;
+    const last = queue[queue.length - 1];
+    if (!last) {
+      sfx.bad();
+      wobble($('#g4loop'));
+      speak('さきに やじるしを おしてから、くりかえしだよ');
+      return;
+    }
+    if (last.times >= 4) { sfx.bad(); wobble($('#g4loop')); return; }
+    sfx.tap();
+    last.times++;
+    renderQueue();
+  });
 
   $('#g4go').addEventListener('click', async () => {
     if (running()) return;
@@ -101,12 +119,14 @@ games.g4 = (() => {
     const e = epoch; // abort silently if the child leaves this screen mid-run
     runEpoch = e;
     const lv = levels[level];
+    const steps = [];
+    queue.forEach(cmd => { for (let k = 0; k < cmd.times; k++) steps.push(cmd.dir); });
     let c = 0, r = 0, failed = false;
     placeRobot(0, 0, true);
     await delay(150);
     if (e !== epoch) return;
-    for (let i = 0; i < queue.length; i++) {
-      const d = queue[i];
+    for (let i = 0; i < steps.length; i++) {
+      const d = steps[i];
       const nc = c + (d === 'right' ? 1 : 0);
       const nr = r + (d === 'up' ? 1 : 0);
       if (nc >= COLS || nr >= ROWS || isRock(lv, nc, nr)) { failed = true; break; }

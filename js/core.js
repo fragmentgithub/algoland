@@ -43,3 +43,18 @@ let limitMin = parseInt(store.get('limit', '15'), 10); if (isNaN(limitMin)) limi
 let pin = store.get('pin', '1234');
 let rateOpt = store.get('rate', 'normal');
 let muted = store.get('muted', '0') === '1';
+let kidName = store.get('kidName', 'そうしん');
+
+function renderKidName() {
+  const el = $('.kid-name');
+  if (el) el.textContent = kidName ? kidName + 'の' : '';
+  document.title = (kidName ? kidName + 'の ' : '') + 'アルゴランド';
+}
+renderKidName();
+
+/* PWA: service worker (skipped on file:// where SW is unavailable) */
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}

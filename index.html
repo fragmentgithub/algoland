@@ -7,7 +7,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=2026.07.04.3">
+<link rel="stylesheet" href="css/style.css?v=2026.07.04.4">
+<meta name="theme-color" content="#7BC8F0">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="アルゴランド">
 </head>
 <body>
 <div class="cloud">☁️</div>
@@ -60,11 +66,14 @@
     <button class="card" style="--card-c:#F45B9E" data-game="g6">
       <span class="icon">🔍</span><span class="name">かたち さがし</span>
     </button>
+    <button class="card" style="--card-c:#FF9F45" data-game="g7">
+      <span class="icon">🔧</span><span class="name">まちがい さがし</span>
+    </button>
   </div>
   <div id="friendrow"></div>
   <div class="home-foot">
     <button class="linkbtn" id="parentbtn">おうちの かたへ</button>
-    <span class="app-version">v2026.07.04.3</span>
+    <span class="app-version">v2026.07.04.4</span>
   </div>
 </section>
 
@@ -145,6 +154,7 @@
     <div class="cmdrow">
       <button class="arrowbtn" data-dir="up">⬆️</button>
       <button class="arrowbtn" data-dir="right">➡️</button>
+      <button class="arrowbtn loopbtn" id="g4loop" aria-label="くりかえし">🔁</button>
       <button class="gobtn" id="g4go">GO!</button>
     </div>
   </div>
@@ -185,6 +195,27 @@
   </div>
   <div class="playarea">
     <div class="shapegrid" id="g6grid"></div>
+  </div>
+</section>
+
+<!-- ================= GAME 7 ================= -->
+<section class="screen" id="g7">
+  <div class="topbar">
+    <button class="chipbtn backbtn">🏠</button>
+    <span class="spacer"></span>
+    <div class="roundpips" id="g7pips"></div>
+    <span class="spacer"></span>
+    <span class="starwallet">⭐ <b class="starcount2">0</b></span>
+  </div>
+  <div class="instruction">
+    <span class="txt" id="g7txt">うえの おてほんと ちがう ところを タッチ!</span>
+    <button class="speakbtn" data-say="g7txt">🔈</button>
+  </div>
+  <div class="playarea dbg-area">
+    <span class="dbg-label">おてほん</span>
+    <div class="seqrow model" id="g7model"></div>
+    <span class="dbg-label">どこか 1つ まちがってるよ</span>
+    <div class="seqrow" id="g7seq"></div>
   </div>
 </section>
 
@@ -232,11 +263,13 @@
       <dt>🍎 つぎはなあに?</dt>
       <dd>繰り返しの規則(パターン)を見つける力。難易度が上がると AAB・AABB などの複雑なパターンになります。</dd>
       <dt>🤖 ロボットのおつかい</dt>
-      <dd>手順を組み立ててから実行する「計画→実行→修正」の体験。むずかしいモードでは岩をよけるルート探しが加わります。</dd>
+      <dd>手順を組み立ててから実行する「計画→実行→修正」の体験。ふつう以上では🔁ボタンで「くりかえし(ループ)」も使えます。むずかしいモードでは岩をよけるルート探しが加わります。</dd>
       <dt>🧺 なかまわけ</dt>
       <dd>ものをグループに分ける「分類」。データを仲間ごとに整理する考え方の基礎です。</dd>
       <dt>🔍 かたちさがし</dt>
       <dd>「あかい まる」のように条件を組み合わせて探す、条件判定(AND)の体験です。</dd>
+      <dt>🔧 まちがいさがし</dt>
+      <dd>お手本と見比べて、違う1か所を見つけて直す「デバッグ」の体験です。プログラミングの半分は間違い探しです。</dd>
     </dl>
     <p style="margin-top:12px">
       ⚙️(せってい)から難易度・プレイ時間の変更ができます。設定と時間切れ後のリセットには暗証番号が必要です(初期値: <b>1234</b>)。
@@ -275,6 +308,10 @@
         <button data-v="slow">ゆっくり</button>
         <button data-v="normal">ふつう</button>
       </div>
+    </div>
+    <div class="optrow">
+      <span class="optlabel">おこさまの なまえ(よびかけに つかいます)</span>
+      <input id="optname" class="optinput" maxlength="8" placeholder="なまえ">
     </div>
     <div class="optrow">
       <span class="optlabel">あんしょうばんごう</span>
@@ -318,5 +355,6 @@
 <script src="js/games/g4-robot.js"></script>
 <script src="js/games/g5-sort.js"></script>
 <script src="js/games/g6-shapes.js"></script>
+<script src="js/games/g7-debug.js"></script>
 </body>
 </html>
