@@ -16,7 +16,11 @@ games.g4 = (() => {
     ],
   ];
   const DECO = ['🌸', '🌼', '🍄', '🌷'];
-  let levels = [], level = 0, queue = [], running = false;
+  let levels = [], level = 0, queue = [];
+  // a run is bound to the epoch it started in: any screen change / lock (epoch++)
+  // both aborts the loop AND re-enables the buttons — no stuck "running" flag
+  let runEpoch = -1;
+  const running = () => runEpoch === epoch;
   let rc = 0, rr = 0; // robot logical position
 
   function start() { levels = LV[diff]; level = 0; buildLevel(); }
@@ -36,7 +40,7 @@ games.g4 = (() => {
   const isRock = (lv, c, r) => (lv.rocks || []).some(([rc2, rr2]) => rc2 === c && rr2 === r);
 
   function buildLevel() {
-    queue = []; running = false;
+    queue = []; runEpoch = -1;
     renderPips($('#g4pips'), levels.length, level);
     speak('やじるしを ならべて、ロボットを ほしまで つれていってね');
     const lv = levels[level];
@@ -71,7 +75,7 @@ games.g4 = (() => {
       chip.className = 'cmdchip arrive';
       chip.textContent = d === 'up' ? '⬆️' : '➡️';
       chip.addEventListener('click', () => {
-        if (running) return;
+        if (running()) return;
         sfx.tap(); queue.splice(i, 1); renderQueue();
       });
       q.appendChild(chip);
@@ -79,23 +83,23 @@ games.g4 = (() => {
   }
 
   $$('#g4 .arrowbtn').forEach(b => b.addEventListener('click', () => {
-    if (running || queue.length >= 9) return;
+    if (running() || queue.length >= 9) return;
     sfx.tap();
     queue.push(b.dataset.dir);
     renderQueue();
   }));
 
   $('#g4go').addEventListener('click', async () => {
-    if (running) return;
+    if (running()) return;
     if (queue.length === 0) {
       sfx.bad();
       wobble($('#g4queue'));
       speak('やじるしを おしてから、ゴーだよ');
       return;
     }
-    running = true;
     sfx.tap();
     const e = epoch; // abort silently if the child leaves this screen mid-run
+    runEpoch = e;
     const lv = levels[level];
     let c = 0, r = 0, failed = false;
     placeRobot(0, 0, true);
@@ -116,7 +120,7 @@ games.g4 = (() => {
     if (!failed && c === lv.g[0] && r === lv.g[1]) {
       await delay(250);
       if (e !== epoch) return;
-      running = false;
+      runEpoch = -1;
       finishRound(level === levels.length - 1, () => { level++; buildLevel(); });
       return;
     }
@@ -130,7 +134,7 @@ games.g4 = (() => {
     placeRobot(0, 0);
     await delay(450);
     if (e !== epoch) return;
-    running = false;
+    runEpoch = -1;
   });
 
   window.addEventListener('resize', () => {

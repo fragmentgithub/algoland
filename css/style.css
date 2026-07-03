@@ -25,10 +25,10 @@ body{
 }
 button{font-family:inherit;font-weight:800;color:var(--ink);border:none;cursor:pointer;touch-action:manipulation;background:none}
 
-/* ---- drifting clouds (ゆっくり) ---- */
-.cloud{position:fixed;top:8%;font-size:64px;opacity:.8;pointer-events:none;animation:drift 130s linear infinite;z-index:0}
-.cloud.c2{top:22%;font-size:44px;animation-duration:180s;animation-delay:-60s}
-.cloud.c3{top:4%;font-size:52px;animation-duration:230s;animation-delay:-140s}
+/* ---- drifting clouds (とてもゆっくり) ---- */
+.cloud{position:fixed;top:8%;font-size:64px;opacity:.8;pointer-events:none;animation:drift 260s linear infinite;z-index:0}
+.cloud.c2{top:22%;font-size:44px;animation-duration:340s;animation-delay:-120s}
+.cloud.c3{top:4%;font-size:52px;animation-duration:420s;animation-delay:-260s}
 @keyframes drift{from{left:-15%}to{left:105%}}
 
 /* ---- screens ---- */
