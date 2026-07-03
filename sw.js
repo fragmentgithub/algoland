@@ -2,7 +2,7 @@
 /* アルゴランド service worker
    更新手順: リリースごとに CACHE のバージョン文字列を必ず上げる
    (index.html の ?v= / .app-version と同じ値に揃える) */
-const CACHE = 'algoland-v2026.07.04.4';
+const CACHE = 'algoland-v2026.07.04.5';
 const ASSETS = [
   './',
   'index.html',

@@ -25,11 +25,13 @@ body{
 }
 button{font-family:inherit;font-weight:800;color:var(--ink);border:none;cursor:pointer;touch-action:manipulation;background:none}
 
-/* ---- clouds: float in place (no horizontal drift — repeatedly reported as "too fast") ---- */
-.cloud{position:fixed;top:8%;left:12%;font-size:64px;opacity:.8;pointer-events:none;animation:cloudfloat 14s ease-in-out infinite;z-index:0}
-.cloud.c2{top:22%;left:68%;font-size:44px;animation-duration:18s;animation-delay:-6s}
-.cloud.c3{top:4%;left:42%;font-size:52px;animation-duration:22s;animation-delay:-12s}
-@keyframes cloudfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+/* ---- clouds: fully static decoration.
+   NO ambient looping animation anywhere on the home screen — staggered idle
+   motion means "something is always moving" and reads as fast/busy no matter
+   how long the period is (learned over 4 rounds of feedback). ---- */
+.cloud{position:fixed;top:8%;left:12%;font-size:64px;opacity:.8;pointer-events:none;z-index:0}
+.cloud.c2{top:22%;left:68%;font-size:44px}
+.cloud.c3{top:4%;left:42%;font-size:52px}
 
 /* ---- screens ---- */
 .screen{display:none;position:relative;z-index:1;height:100dvh;flex-direction:column;padding:12px}
@@ -61,11 +63,9 @@ button{font-family:inherit;font-weight:800;color:var(--ink);border:none;cursor:p
   display:block;font-size:clamp(18px,3.8vmin,30px);letter-spacing:.04em;
   color:var(--coral);line-height:1.25;text-shadow:0 3px 0 rgba(43,58,103,.12);
 }
-.home-title h1 span{display:inline-block;animation:bob 8s ease-in-out infinite}
-.home-title h1 span:nth-child(2n){animation-delay:.8s}
-.home-title h1 span:nth-child(3n){animation-delay:1.6s}
+.home-title h1 span{display:inline-block} /* static — no idle wave */
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-.mascot{width:clamp(64px,12vmin,110px);animation:bob 8s ease-in-out infinite}
+.mascot{width:clamp(64px,12vmin,110px)}
 #decor{font-size:clamp(26px,5vmin,42px)}
 .home-sub{font-size:clamp(14px,2.8vmin,19px);opacity:.8}
 .cards{
@@ -91,9 +91,7 @@ button{font-family:inherit;font-weight:800;color:var(--ink);border:none;cursor:p
   background:rgba(255,255,255,.5);border-radius:999px;padding:8px 20px;max-width:94vw;
 }
 #friendrow .rowlabel{font-size:13px;opacity:.7}
-.friend{font-size:34px;line-height:1;transition:transform .12s;animation:bob 3s ease-in-out infinite}
-.friend:nth-child(2n){animation-delay:.4s}
-.friend:nth-child(3n){animation-delay:.8s}
+.friend{font-size:34px;line-height:1;transition:transform .12s}
 .friend:active{transform:scale(1.25)}
 .friend.locked{filter:grayscale(1);opacity:.5;animation:none;display:inline-flex;flex-direction:column;align-items:center;font-size:26px}
 .friend.locked small{font-size:10px;font-weight:700}
