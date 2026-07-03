@@ -27,7 +27,8 @@ js/rewards.js   stars / FRIENDS(⭐3,6,10,15,20,26,33,40,50で解放) / pendingF
 js/pad.js       暗証番号パッド(openPad/closePad/askPin)。4桁入力後180msのpadLock窓、✕は常に勝つ
 js/timer.js     1日のプレイ時間制限。localDay()はローカルタイムゾーン基準。
                 lockApp()/unlockApp()。日付が変わると自動リセット(1秒間隔のinterval内で検出)
-js/options.js   ⚙️設定(PINゲート)。難易度/時間/声の速さ/PIN変更(2回入力確認)
+js/options.js   ⚙️設定(PINゲート)。難易度/時間/声の速さ/なまえ/こえのテスト/PIN変更(2回入力確認)/
+                成果リセット(5秒以内の2度押し確認式。⭐とおともだちのみ初期化、設定は残す)
 js/ui.js        show()(画面遷移)、renderPips、celebrate→nextbtn→friendol→runNext の連鎖、
                 games レジストリ、finishRound()
 js/games/g*.js  各ゲーム。IIFEで games.gN = {start} を登録

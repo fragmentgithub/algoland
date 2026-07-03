@@ -13,6 +13,7 @@ function renderOptions() {
   $$('#optrate button').forEach(b => b.classList.toggle('on', b.dataset.v === rateOpt));
   $('#optname').value = kidName;
   renderVoiceStatus();
+  disarmReset(); // opening the panel always starts from the safe state
 }
 function renderVoiceStatus() {
   const el = $('#voicestatus');
@@ -43,6 +44,31 @@ $$('#optrate button').forEach(b => b.addEventListener('click', () => {
   sfx.tap(); rateOpt = b.dataset.v; store.set('rate', rateOpt); renderOptions();
   speak('こんにちは!アルゴランドへ ようこそ!');
 }));
+/* progress reset — destructive, so it needs a second tap within 5s to confirm */
+let resetArmed = false, resetTimer = null;
+function disarmReset() {
+  resetArmed = false;
+  if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
+  $('#resetstars').textContent = '⭐と おともだちを リセット';
+}
+$('#resetstars').addEventListener('click', () => {
+  sfx.tap();
+  if (!resetArmed) {
+    resetArmed = true;
+    $('#resetstars').textContent = 'ほんとうに リセット? もういちど タッチ';
+    speak('ほんとうに リセットしますか?');
+    resetTimer = setTimeout(disarmReset, 5000);
+    return;
+  }
+  stars = 0;
+  store.set('stars', '0');
+  pendingFriend = null;
+  renderStars();
+  disarmReset();
+  sfx.good();
+  speak('せいかを リセットしたよ。また いちから あつめよう!');
+});
+
 $('#pinchange').addEventListener('click', () => {
   sfx.tap();
   openPad('あたらしい 4けたの ばんごう', v1 => {

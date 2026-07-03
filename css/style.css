@@ -313,6 +313,7 @@ button{font-family:inherit;font-weight:800;color:var(--ink);border:none;cursor:p
 .seg button.on{background:var(--sun);box-shadow:0 3px 0 rgba(43,58,103,.2)}
 .seg button:active{transform:scale(.95)}
 .optbtn{background:var(--aqua);color:#fff;border-radius:14px;padding:12px 18px;font-size:16px}
+.optbtn.danger{background:var(--coral)}
 .optinput{
   font-family:inherit;font-weight:700;font-size:18px;color:var(--ink);
   padding:10px 14px;border-radius:14px;border:3px solid rgba(43,58,103,.25);
