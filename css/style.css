@@ -55,7 +55,11 @@ button{font-family:inherit;font-weight:800;color:var(--ink);border:none;cursor:p
 .home-title{display:flex;align-items:center;gap:14px;margin-top:6px}
 .home-title h1{
   font-size:clamp(34px,7vmin,60px);font-weight:800;letter-spacing:.06em;
-  text-shadow:0 4px 0 rgba(43,58,103,.15);
+  line-height:.95;text-shadow:0 4px 0 rgba(43,58,103,.15);
+}
+.home-title .kid-name{
+  display:block;font-size:clamp(18px,3.8vmin,30px);letter-spacing:.04em;
+  color:var(--coral);line-height:1.25;text-shadow:0 3px 0 rgba(43,58,103,.12);
 }
 .home-title h1 span{display:inline-block;animation:bob 8s ease-in-out infinite}
 .home-title h1 span:nth-child(2n){animation-delay:.8s}
